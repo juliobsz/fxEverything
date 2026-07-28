@@ -7,6 +7,15 @@ const supportedPages = [
   "https://x.com/*",
   "https://instagram.com/*",
   "https://www.instagram.com/*",
+  "https://tiktok.com/*",
+  "https://www.tiktok.com/*",
+  "https://m.tiktok.com/*",
+  "https://reddit.com/*",
+  "https://www.reddit.com/*",
+  "https://threads.com/*",
+  "https://www.threads.com/*",
+  "https://threads.net/*",
+  "https://www.threads.net/*",
 ];
 
 export default defineManifest({

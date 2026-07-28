@@ -4,7 +4,6 @@ import {
   type Platform,
 } from "../shared/platforms";
 import {
-  isSettings,
   settingKeyForPlatform,
   SETTINGS_MESSAGE_TYPE,
 } from "../shared/settings";
@@ -16,14 +15,16 @@ interface InterceptorState {
 }
 
 type WindowWithInterceptor = Window & {
-  __fxEverythingClipboardV2__?: InterceptorState;
+  __fxEverythingClipboardV3__?: InterceptorState;
 };
+
+const LEGACY_SETTINGS_MESSAGE_TYPE = "fxeverything:settings:v2";
 
 const platform = platformForHostname(location.hostname);
 
 if (platform) {
   const pageWindow = window as WindowWithInterceptor;
-  const existingState = pageWindow.__fxEverythingClipboardV2__;
+  const existingState = pageWindow.__fxEverythingClipboardV3__;
   const state: InterceptorState =
     existingState ?? {
       enabled: false,
@@ -32,7 +33,7 @@ if (platform) {
     };
 
   state.platform = platform;
-  pageWindow.__fxEverythingClipboardV2__ = state;
+  pageWindow.__fxEverythingClipboardV3__ = state;
 
   window.addEventListener("message", (event: MessageEvent<unknown>) => {
     if (
@@ -47,9 +48,19 @@ if (platform) {
       type?: unknown;
     };
 
-    if (message.type !== SETTINGS_MESSAGE_TYPE || !isSettings(message.settings)) return;
+    if (
+      message.type !== SETTINGS_MESSAGE_TYPE
+      && message.type !== LEGACY_SETTINGS_MESSAGE_TYPE
+    ) return;
 
-    state.enabled = message.settings[settingKeyForPlatform(state.platform)];
+    if (!message.settings || typeof message.settings !== "object") return;
+
+    const settingKey = settingKeyForPlatform(state.platform);
+    const enabled = (message.settings as Record<string, unknown>)[settingKey];
+
+    if (typeof enabled !== "boolean") return;
+
+    state.enabled = enabled;
   });
 
   window.addEventListener("copy", (event: ClipboardEvent) => {

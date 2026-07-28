@@ -1,8 +1,13 @@
 <div align="center">
     <img src="public/icon.png" alt="logo" style="height: 100px;"/>
     <h1 style="font-size: 28px;">FxEverything</h1>
-    <p>Better Social Embeds</p>
+    <p>One extension to fix social embeds everywhere.</p>
 </div>
+<p align="center">
+    <video src="https://i.imgur.com/IMwcn1w.mp4" width="720" autoplay loop muted playsinline>
+        FxEverything preview
+    </video>
+</p>
 <p align="center">
     FxEverything silently replaces supported social-media post URLs with links that
     produce richer embeds when you use the site's built-in <strong>Copy link</strong> action.
@@ -10,14 +15,23 @@
 
 #### The extension is pending review on the Chrome Web Store.
 
-Version 1.1 supports:
+Supported platforms:
 
 - X posts: `x.com` → `fixupx.com`
 - Instagram posts, Reels, and carousels: `instagram.com` → `oginstagram.com`
 - Bluesky posts, replies, and quote posts: `bsky.app` → `fxbsky.app`
+- TikTok videos and photo posts: `tiktok.com` → `tnktok.com`
+- Reddit posts and share links: `reddit.com` → `vxreddit.com`
+- Threads posts: `threads.com` or `threads.net` → `vxthreads.com`
 
 Normal browsing is unchanged. Unsupported or uncertain links are copied
 unchanged.
+
+## Why?
+
+Many chat apps and communities cannot create rich previews for social posts.
+FxEverything fixes the link when you copy it, so the post is more likely to
+embed cleanly wherever you share it, without changing how you browse.
 
 ## Install locally
 
@@ -42,13 +56,14 @@ The release-ready archive is generated at
     <summary><b>Privacy and permissions</b></summary>
 
 URL processing is local. The extension has no analytics, accounts, backend, or
-extension-owned network requests. It stores only the three automatic-rewriting
+extension-owned network requests. It stores only the six automatic-rewriting
 preferences. See [`PRIVACY.md`](PRIVACY.md).
 
 The extension requests:
 
-- access only on `x.com`, `instagram.com`, `www.instagram.com`, and `bsky.app`;
-- `storage` for the three preferences;
+- access only on the supported X, Instagram, Bluesky, TikTok, Reddit, and
+  Threads hosts;
+- `storage` for the six preferences;
 - `activeTab` so the popup can copy a fixed link for the current page.
 
 It does not request clipboard permissions or access to browsing history.
@@ -57,8 +72,9 @@ It does not request clipboard permissions or access to browsing history.
 <details>
     <summary><b>Independence</b></summary>
 
-FxEverything is not affiliated with X, Instagram, Bluesky, FixupX,
-OGInstagram, FxBluesky, or Discord. The third-party embed services can change
+FxEverything is not affiliated with X, Instagram, Bluesky, TikTok, Reddit,
+Threads, FixupX, OGInstagram, FxBluesky, fxTikTok, vxreddit, vxThreads,
+or Discord. The third-party embed services can change
 or become unavailable.
 
 </details>

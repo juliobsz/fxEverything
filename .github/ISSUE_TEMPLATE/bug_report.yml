@@ -11,6 +11,10 @@ body:
       options:
         - X
         - Instagram
+        - Bluesky
+        - TikTok
+        - Reddit
+        - Threads
         - Extension popup
     validations:
       required: true

@@ -10,10 +10,13 @@ contents, or usage analytics.
 ## Local processing
 
 FxEverything runs only on supported pages on `x.com`, `instagram.com`,
-`www.instagram.com`, and `bsky.app`. When a supported platform writes a
-recognized post URL during its built-in Copy link operation, the extension
-removes tracking parameters and substitutes a Fixed Link. This processing
-occurs locally and the URL is not sent to FxEverything or its maintainers.
+`www.instagram.com`, `bsky.app`, `tiktok.com`, `www.tiktok.com`,
+`m.tiktok.com`, `reddit.com`, `www.reddit.com`, `threads.com`,
+`www.threads.com`, `threads.net`, and `www.threads.net`. When a supported
+platform writes a recognized post URL during its built-in Copy link operation,
+the extension removes tracking parameters and substitutes a Fixed Link. This
+processing occurs locally and the URL is not sent to FxEverything or its
+maintainers.
 
 The extension does not read clipboard contents.
 
@@ -27,8 +30,8 @@ stored data.
 ## Third-party Embed Services
 
 Fixed Links point to independent third-party Embed Services, currently FixupX,
-OGInstagram, and FxBluesky. FxEverything does not operate, control, or contact
-these services while rewriting a URL.
+OGInstagram, FxBluesky, fxTikTok, vxreddit, and vxThreads. FxEverything does
+not operate, control, or contact these services while rewriting a URL.
 
 When a Fixed Link is later shared or opened, the messaging application,
 browser, or other software handling that link may contact the relevant Embed
@@ -37,11 +40,11 @@ privacy practices.
 
 ## Permissions
 
-FxEverything requests page access only on `x.com`, `instagram.com`,
-`www.instagram.com`, and `bsky.app`. This access lets it substitute recognized
-URLs written by those sites.
+FxEverything requests page access only on the supported X, Instagram,
+Bluesky, TikTok, Reddit, and Threads hosts. This access lets it substitute
+recognized URLs written by those sites.
 
-The `storage` permission saves the three local preferences described above. The
+The `storage` permission saves the six local preferences described above. The
 `activeTab` permission lets the popup read the current page URL only after the
 user opens the extension, for the manual **Copy fixed link for this page**
 action.

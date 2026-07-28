@@ -48,6 +48,18 @@ export function App() {
           changes.autoFixInstagram,
           current.autoFixInstagram,
         ),
+        autoFixReddit: booleanChange(
+          changes.autoFixReddit,
+          current.autoFixReddit,
+        ),
+        autoFixThreads: booleanChange(
+          changes.autoFixThreads,
+          current.autoFixThreads,
+        ),
+        autoFixTikTok: booleanChange(
+          changes.autoFixTikTok,
+          current.autoFixTikTok,
+        ),
         autoFixX: booleanChange(changes.autoFixX, current.autoFixX),
       }));
     };
@@ -121,6 +133,21 @@ export function App() {
           checked={settings.autoFixBluesky}
           label="Fix Bluesky links automatically"
           onChange={(checked) => updateSetting("autoFixBluesky", checked)}
+        />
+        <Switch
+          checked={settings.autoFixTikTok}
+          label="Fix TikTok links automatically"
+          onChange={(checked) => updateSetting("autoFixTikTok", checked)}
+        />
+        <Switch
+          checked={settings.autoFixReddit}
+          label="Fix Reddit links automatically"
+          onChange={(checked) => updateSetting("autoFixReddit", checked)}
+        />
+        <Switch
+          checked={settings.autoFixThreads}
+          label="Fix Threads links automatically"
+          onChange={(checked) => updateSetting("autoFixThreads", checked)}
         />
       </section>
 

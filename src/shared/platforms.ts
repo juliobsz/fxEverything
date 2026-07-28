@@ -1,4 +1,10 @@
-export type Platform = "x" | "instagram" | "bluesky";
+export type Platform =
+  | "x"
+  | "instagram"
+  | "bluesky"
+  | "tiktok"
+  | "reddit"
+  | "threads";
 
 export interface RewrittenLink {
   fixedUrl: string;
@@ -7,6 +13,21 @@ export interface RewrittenLink {
 
 const X_SOURCE_HOST = "x.com";
 const BLUESKY_SOURCE_HOST = "bsky.app";
+const TIKTOK_SOURCE_HOSTS = new Set([
+  "tiktok.com",
+  "www.tiktok.com",
+  "m.tiktok.com",
+]);
+const REDDIT_SOURCE_HOSTS = new Set([
+  "reddit.com",
+  "www.reddit.com",
+]);
+const THREADS_SOURCE_HOSTS = new Set([
+  "threads.com",
+  "www.threads.com",
+  "threads.net",
+  "www.threads.net",
+]);
 const INSTAGRAM_SOURCE_HOSTS = new Set([
   "instagram.com",
   "www.instagram.com",
@@ -20,6 +41,12 @@ export function platformForHostname(hostname: string): Platform | null {
   if (normalizedHostname === BLUESKY_SOURCE_HOST) return "bluesky";
 
   if (INSTAGRAM_SOURCE_HOSTS.has(normalizedHostname)) return "instagram";
+
+  if (TIKTOK_SOURCE_HOSTS.has(normalizedHostname)) return "tiktok";
+
+  if (REDDIT_SOURCE_HOSTS.has(normalizedHostname)) return "reddit";
+
+  if (THREADS_SOURCE_HOSTS.has(normalizedHostname)) return "threads";
 
   return null;
 }
@@ -83,6 +110,43 @@ function rewriteBlueskyUrl(url: URL): string | null {
   return `https://fxbsky.app/profile/${actor}/post/${recordKey}`;
 }
 
+function rewriteTikTokUrl(url: URL): string | null {
+  if (url.protocol !== "https:" || !TIKTOK_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+
+  const match = url.pathname.match(
+    /^\/@([A-Za-z0-9._]{1,24})\/(video|photo)\/([0-9]{1,30})\/?$/,
+  );
+
+  if (!match) return null;
+
+  const [, username, contentType, postId] = match;
+  return `https://tnktok.com/@${username}/${contentType}/${postId}`;
+}
+
+function rewriteRedditUrl(url: URL): string | null {
+  if (url.protocol !== "https:" || !REDDIT_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+
+  const isPost = /^\/r\/[A-Za-z0-9_]{2,21}\/comments\/[A-Za-z0-9]+(?:\/[^/?#]+)?(?:\/[A-Za-z0-9]+)?\/?$/.test(url.pathname);
+  const isShareLink = /^\/r\/[A-Za-z0-9_]{2,21}\/s\/[A-Za-z0-9]+\/?$/.test(url.pathname);
+
+  if (!isPost && !isShareLink) return null;
+
+  return `https://vxreddit.com${url.pathname}`;
+}
+
+function rewriteThreadsUrl(url: URL): string | null {
+  if (url.protocol !== "https:" || !THREADS_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+
+  const match = url.pathname.match(
+    /^\/@([A-Za-z0-9._]{1,30})\/post\/([A-Za-z0-9_-]+)\/?$/,
+  );
+
+  if (!match) return null;
+
+  const [, username, shortcode] = match;
+  return `https://vxthreads.com/@${username}/post/${shortcode}`;
+}
+
 export function rewriteUrlForPlatform(input: string, platform: Platform,): string | null {
   if (input !== input.trim()) return null;
 
@@ -101,6 +165,12 @@ export function rewriteUrlForPlatform(input: string, platform: Platform,): strin
       return rewriteInstagramUrl(url);
     case "bluesky":
       return rewriteBlueskyUrl(url);
+    case "tiktok":
+      return rewriteTikTokUrl(url);
+    case "reddit":
+      return rewriteRedditUrl(url);
+    case "threads":
+      return rewriteThreadsUrl(url);
   }
 }
 
