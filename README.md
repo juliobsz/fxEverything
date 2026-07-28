@@ -3,11 +3,11 @@
     <h1 style="font-size: 28px;">FxEverything</h1>
     <p>One extension to fix social embeds everywhere.</p>
 </div>
-<p align="center">
-    <video src="https://i.imgur.com/IMwcn1w.mp4" width="720" autoplay loop muted playsinline>
-        FxEverything preview
-    </video>
+
+<p align="center" width="100%">
+<video src="https://github.com/user-attachments/assets/d63a5ece-1b17-4a4d-ba75-885b47135fd4" width="50%" controls></video>
 </p>
+
 <p align="center">
     FxEverything silently replaces supported social-media post URLs with links that
     produce richer embeds when you use the site's built-in <strong>Copy link</strong> action.
