@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a link that was not rewritten correctly
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - X
+        - Instagram
+        - Extension popup
+    validations:
+      required: true
+  - type: input
+    id: chrome
+    attributes:
+      label: Chrome version
+      placeholder: "Example: 140.0.7339.81"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What happened?
+      description: Include the steps, expected result, and actual result. Remove private information from URLs.
+    validations:
+      required: true
