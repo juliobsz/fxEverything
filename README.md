@@ -62,5 +62,5 @@ Discord. The third-party embed services can change or become unavailable.
 
 <details>
     <summary><b>License</b></summary>
-[MIT](LICENSE)
+<a href="LICENSE">MIT</a>
 </details>
