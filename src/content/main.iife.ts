@@ -16,23 +16,23 @@ interface InterceptorState {
 }
 
 type WindowWithInterceptor = Window & {
-  __fxEverythingClipboardV1__?: InterceptorState;
+  __fxEverythingClipboardV2__?: InterceptorState;
 };
 
 const platform = platformForHostname(location.hostname);
 
 if (platform) {
   const pageWindow = window as WindowWithInterceptor;
-  const existingState = pageWindow.__fxEverythingClipboardV1__;
+  const existingState = pageWindow.__fxEverythingClipboardV2__;
   const state: InterceptorState =
     existingState ?? {
-      enabled: true,
+      enabled: false,
       installed: false,
       platform,
     };
 
   state.platform = platform;
-  pageWindow.__fxEverythingClipboardV1__ = state;
+  pageWindow.__fxEverythingClipboardV2__ = state;
 
   window.addEventListener("message", (event: MessageEvent<unknown>) => {
     if (
@@ -66,6 +66,7 @@ if (platform) {
     event.preventDefault();
     event.clipboardData.setData("text/plain", output);
   });
+
   if (!state.installed) {
     const clipboardPrototype = globalThis.Clipboard?.prototype;
     const descriptor = clipboardPrototype

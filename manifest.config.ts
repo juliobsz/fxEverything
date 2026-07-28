@@ -3,6 +3,7 @@ import { defineManifest } from "@crxjs/vite-plugin";
 import packageJson from "./package.json";
 
 const supportedPages = [
+  "https://bsky.app/*",
   "https://x.com/*",
   "https://instagram.com/*",
   "https://www.instagram.com/*",
@@ -13,7 +14,7 @@ export default defineManifest({
   name: "FxEverything — Better Social Embeds",
   short_name: "FxEverything",
   description:
-    "Silently copy richer embed links from X and Instagram share actions.",
+    "Silently copy richer embed links from social media share actions.",
   version: packageJson.version,
   minimum_chrome_version: "111",
   permissions: ["storage", "activeTab"],

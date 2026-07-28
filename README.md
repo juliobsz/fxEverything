@@ -9,10 +9,11 @@
 </p>
 
 
-Version 1.0 supports:
+Version 1.1 supports:
 
 - X posts: `x.com` → `fixupx.com`
 - Instagram posts, Reels, and carousels: `instagram.com` → `oginstagram.com`
+- Bluesky posts, replies, and quote posts: `bsky.app` → `fxbsky.app`
 
 Normal browsing is unchanged. Unsupported or uncertain links are copied
 unchanged.
@@ -40,13 +41,13 @@ The release-ready archive is generated at
     <summary><b>Privacy and permissions</b></summary>
 
 URL processing is local. The extension has no analytics, accounts, backend, or
-extension-owned network requests. It stores only the two automatic-rewriting
+extension-owned network requests. It stores only the three automatic-rewriting
 preferences. See [`PRIVACY.md`](PRIVACY.md).
 
 The extension requests:
 
-- access only on `x.com`, `instagram.com`, and `www.instagram.com`;
-- `storage` for the two preferences;
+- access only on `x.com`, `instagram.com`, `www.instagram.com`, and `bsky.app`;
+- `storage` for the three preferences;
 - `activeTab` so the popup can copy a fixed link for the current page.
 
 It does not request clipboard permissions or access to browsing history.
@@ -55,8 +56,9 @@ It does not request clipboard permissions or access to browsing history.
 <details>
     <summary><b>Independence</b></summary>
 
-FxEverything is not affiliated with X, Instagram, FixupX, OGInstagram, or
-Discord. The third-party embed services can change or become unavailable.
+FxEverything is not affiliated with X, Instagram, Bluesky, FixupX,
+OGInstagram, FxBluesky, or Discord. The third-party embed services can change
+or become unavailable.
 
 </details>
 

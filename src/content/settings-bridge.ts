@@ -1,6 +1,7 @@
 import {
-  DEFAULT_SETTINGS,
+  SETTINGS_KEYS,
   SETTINGS_MESSAGE_TYPE,
+  settingsFromStorage,
   type Settings,
 } from "../shared/settings";
 
@@ -15,20 +16,8 @@ function publishSettings(settings: Settings): void {
 }
 
 async function loadSettings(): Promise<void> {
-  const stored = await chrome.storage.local.get([
-    "autoFixX",
-    "autoFixInstagram",
-  ]);
-  const settings: Settings = {
-    autoFixInstagram:
-      typeof stored.autoFixInstagram === "boolean"
-        ? stored.autoFixInstagram
-        : DEFAULT_SETTINGS.autoFixInstagram,
-    autoFixX:
-      typeof stored.autoFixX === "boolean"
-        ? stored.autoFixX
-        : DEFAULT_SETTINGS.autoFixX,
-  };
+  const stored = await chrome.storage.local.get([...SETTINGS_KEYS]);
+  const settings = settingsFromStorage(stored);
 
   publishSettings(settings);
 }
@@ -36,7 +25,7 @@ async function loadSettings(): Promise<void> {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== "local") return;
 
-  if (!changes.autoFixX && !changes.autoFixInstagram) return;
+  if (!SETTINGS_KEYS.some((key) => changes[key])) return;
 
   void loadSettings();
 });

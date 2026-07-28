@@ -1,4 +1,4 @@
-export type Platform = "x" | "instagram";
+export type Platform = "x" | "instagram" | "bluesky";
 
 export interface RewrittenLink {
   fixedUrl: string;
@@ -6,6 +6,7 @@ export interface RewrittenLink {
 }
 
 const X_SOURCE_HOST = "x.com";
+const BLUESKY_SOURCE_HOST = "bsky.app";
 const INSTAGRAM_SOURCE_HOSTS = new Set([
   "instagram.com",
   "www.instagram.com",
@@ -15,6 +16,8 @@ export function platformForHostname(hostname: string): Platform | null {
   const normalizedHostname = hostname.toLowerCase();
 
   if (normalizedHostname === X_SOURCE_HOST) return "x";
+
+  if (normalizedHostname === BLUESKY_SOURCE_HOST) return "bluesky";
 
   if (INSTAGRAM_SOURCE_HOSTS.has(normalizedHostname)) return "instagram";
 
@@ -53,6 +56,33 @@ function rewriteInstagramUrl(url: URL): string | null {
   return fixedUrl.toString();
 }
 
+function isBlueskyHandle(actor: string): boolean {
+  return actor.length <= 253 && /^([A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$/.test(actor);
+}
+
+function isBlueskyActor(actor: string): boolean {
+  if (/^did:plc:[a-z2-7]{24}$/.test(actor)) return true;
+  if (actor.startsWith("did:web:")) return isBlueskyHandle(actor.slice("did:web:".length));
+  if (actor.startsWith("did:")) return false;
+
+  return isBlueskyHandle(actor);
+}
+
+function rewriteBlueskyUrl(url: URL): string | null {
+  if (url.protocol !== "https:" || url.hostname.toLowerCase() !== BLUESKY_SOURCE_HOST) return null;
+
+  const match = url.pathname.match(
+    /^\/profile\/([^/]+)\/post\/([A-Za-z0-9._:~-]{1,512})\/?$/,
+  );
+
+  if (!match) return null;
+
+  const [, actor, recordKey] = match;
+  if (!isBlueskyActor(actor) || recordKey === "." || recordKey === "..") return null;
+
+  return `https://fxbsky.app/profile/${actor}/post/${recordKey}`;
+}
+
 export function rewriteUrlForPlatform(input: string, platform: Platform,): string | null {
   if (input !== input.trim()) return null;
 
@@ -64,7 +94,14 @@ export function rewriteUrlForPlatform(input: string, platform: Platform,): strin
     return null;
   }
 
-  return platform === "x" ? rewriteXUrl(url) : rewriteInstagramUrl(url);
+  switch (platform) {
+    case "x":
+      return rewriteXUrl(url);
+    case "instagram":
+      return rewriteInstagramUrl(url);
+    case "bluesky":
+      return rewriteBlueskyUrl(url);
+  }
 }
 
 export function rewriteSupportedUrl(input: string): RewrittenLink | null {
