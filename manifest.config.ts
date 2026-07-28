@@ -1,5 +1,7 @@
 import { defineManifest } from "@crxjs/vite-plugin";
 
+import packageJson from "./package.json";
+
 const supportedPages = [
   "https://x.com/*",
   "https://instagram.com/*",
@@ -12,7 +14,7 @@ export default defineManifest({
   short_name: "FxEverything",
   description:
     "Silently copy richer embed links from X and Instagram share actions.",
-  version: "0.1.0",
+  version: packageJson.version,
   minimum_chrome_version: "111",
   permissions: ["storage", "activeTab"],
   icons: {

@@ -5,6 +5,7 @@ import { defineConfig } from "vite";
 import zipPack from "vite-plugin-zip-pack";
 
 import manifest from "./manifest.config";
+import packageJson from "./package.json";
 
 export default defineConfig({
   plugins: [
@@ -14,7 +15,7 @@ export default defineConfig({
     zipPack({
       inDir: "dist",
       outDir: "release",
-      outFileName: "fxeverything-0.1.0.zip",
+      outFileName: `fxeverything-${packageJson.version}.zip`,
     }),
   ],
   build: {

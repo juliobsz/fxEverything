@@ -7,8 +7,6 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "icons": "node scripts/generate-icons.mjs",
-    "prebuild": "npm run icons",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit"
   },
