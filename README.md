@@ -8,6 +8,7 @@
     produce richer embeds when you use the site's built-in <strong>Copy link</strong> action.
 </p>
 
+#### The extension is pending review on the Chrome Web Store.
 
 Version 1.1 supports:
 
