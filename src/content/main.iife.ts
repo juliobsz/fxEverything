@@ -26,12 +26,11 @@ if (platform) {
   const existingState = pageWindow.__fxEverythingClipboardV1__;
   const state: InterceptorState =
     existingState ?? {
-      enabled: false,
+      enabled: true,
       installed: false,
       platform,
     };
 
-  state.enabled = false;
   state.platform = platform;
   pageWindow.__fxEverythingClipboardV1__ = state;
 
@@ -53,6 +52,20 @@ if (platform) {
     state.enabled = message.settings[settingKeyForPlatform(state.platform)];
   });
 
+  window.addEventListener("copy", (event: ClipboardEvent) => {
+    if (!state.enabled || !event.clipboardData) return;
+
+    const activeElement = document.activeElement;
+    const selectedText = activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement
+      ? activeElement.value.slice(activeElement.selectionStart ?? 0, activeElement.selectionEnd ?? 0)
+      : window.getSelection()?.toString() ?? "";
+    const output = rewriteUrlForPlatform(selectedText, state.platform);
+
+    if (!output) return;
+
+    event.preventDefault();
+    event.clipboardData.setData("text/plain", output);
+  });
   if (!state.installed) {
     const clipboardPrototype = globalThis.Clipboard?.prototype;
     const descriptor = clipboardPrototype
@@ -66,63 +79,59 @@ if (platform) {
 
     if (clipboardPrototype && (originalWriteText || originalWrite)) {
       if (descriptor && originalWriteText) {
-      const wrappedWriteText = function (
-        this: Clipboard,
-        data: string,
-      ): Promise<void> {
-        let output = data;
+        const wrappedWriteText = function (
+          this: Clipboard,
+          data: string,
+        ): Promise<void> {
+          let output = data;
 
-        if (state.enabled && typeof data === "string") {
-          try {
-            output = rewriteUrlForPlatform(data, state.platform) ?? data;
-          } catch {
-            output = data;
+          if (state.enabled && typeof data === "string") {
+            try {
+              output = rewriteUrlForPlatform(data, state.platform) ?? data;
+            } catch {
+              output = data;
+            }
           }
+
+          return Reflect.apply(originalWriteText, this, [output]);
+        };
+
+        try {
+          Object.defineProperty(clipboardPrototype, "writeText", {
+            ...descriptor,
+            value: wrappedWriteText,
+          });
+          state.installed = true;
+        } catch {
+          // Try Clipboard.write below.
         }
-
-        return Reflect.apply(originalWriteText, this, [output]);
-      };
-
-      try {
-        Object.defineProperty(clipboardPrototype, "writeText", {
-          ...descriptor,
-          value: wrappedWriteText,
-        });
-        state.installed = true;
-      } catch {
-        // Try Clipboard.write below.
       }
-      }
-
       if (originalWrite) {
-        const wrappedWrite = async function (
+        const wrappedWrite = function (
           this: Clipboard,
           data: ClipboardItems,
         ): Promise<void> {
           if (!state.enabled) return Reflect.apply(originalWrite, this, [data]);
 
-          const rewritten = await Promise.all(data.map(async (item) => {
+          const rewritten = data.map((item) => {
             if (!item.types.includes("text/plain")) return item;
 
-            try {
-              const text = await (await item.getType("text/plain")).text();
-              const output = rewriteUrlForPlatform(text, state.platform);
-              if (!output) return item;
+            const itemData = Object.fromEntries(item.types.map((type) => [
+              type,
+              type === "text/plain"
+                ? item.getType(type).then(async (blob) => {
+                    const text = await blob.text();
+                    const output = rewriteUrlForPlatform(text, state.platform);
+                    return output ? new Blob([output], { type }) : blob;
+                  }).catch(() => item.getType(type))
+                : item.getType(type),
+            ]));
 
-              return new ClipboardItem(Object.fromEntries(
-                await Promise.all(item.types.map(async (type) => [
-                  type,
-                  type === "text/plain" ? new Blob([output], { type }) : await item.getType(type),
-                ])),
-              ));
-            } catch {
-              return item;
-            }
-          }));
+            return new ClipboardItem(itemData);
+          });
 
           return Reflect.apply(originalWrite, this, [rewritten]);
         };
-
         try {
           clipboardPrototype.write = wrappedWrite;
           state.installed = true;
