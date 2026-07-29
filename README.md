@@ -1,7 +1,6 @@
 <div align="center">
     <img src="public/icon.png" alt="logo" style="height: 100px;"/>
     <h1 style="font-size: 28px;">FxEverything</h1>
-    <p>One extension to fix social embeds everywhere.</p>
 </div>
 
 <p align="center" width="100%">
