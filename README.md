@@ -13,7 +13,11 @@
     produce richer embeds when you use the site's built-in <strong>Copy link</strong> action.
 </p>
 
-#### The extension is pending review on the Chrome Web Store.
+<p align="center">
+    <a href="https://chromewebstore.google.com/detail/ogbkdfnmllglocipleheladghcjgjabk">
+        <strong>✨ Get FxEverything for Chrome →</strong>
+    </a>
+</p>
 
 Supported platforms:
 
