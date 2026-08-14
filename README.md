@@ -43,8 +43,8 @@ Many chat apps and communities cannot create rich previews for social posts. FxE
 
 ## Install locally
 
-1. Run `npm install`.
-2. Run `npm run build`.
+1. Run `bun install`.
+2. Run `bun run build`.
 3. Open `chrome://extensions`.
 4. Enable **Developer mode**.
 5. Choose **Load unpacked** and select the generated `dist` folder.
@@ -52,10 +52,10 @@ Many chat apps and communities cannot create rich previews for social posts. FxE
 ## Development
 
 ```sh
-npm run dev
-npm run typecheck
-npm test
-npm run build
+bun run dev
+bun run typecheck
+bun run test
+bun run build
 ```
 
 The release-ready archive is generated at `release/fxeverything-x.x.x.zip`.

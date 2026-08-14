@@ -1,12 +1,6 @@
-import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import vm from "node:vm";
+import { expect, test } from "bun:test";
 
-const bundle = readFileSync(
-  resolve("dist/src/content/main.iife.js"),
-  "utf8",
-);
+const bundle = await Bun.file("dist/src/content/main.iife.js").text();
 
 const currentSettings = {
   autoFixBilibili: true,
@@ -34,25 +28,44 @@ const legacySettings = {
   autoFixX: true,
 };
 
+interface RegressionCase {
+  expectedUrl: string;
+  hostname: string;
+  messageType: string;
+  settings: Record<string, boolean>;
+  sourceUrl: string;
+}
+
+function runInSandbox(code: string, sandbox: Record<string, unknown>) {
+  const names = Object.keys(sandbox);
+  const body = [
+    '"use strict";',
+    `const globalThis = { ${names.join(", ")} };`,
+    code,
+  ].join("\n");
+  const run = new Function(...names, body);
+  run(...Object.values(sandbox));
+}
+
 async function exercise({
   expectedUrl,
   hostname,
   messageType,
   settings,
   sourceUrl,
-}) {
-  const listeners = new Map();
-  let clipboardValue = null;
+}: RegressionCase) {
+  const listeners = new Map<string, Array<(event: unknown) => void>>();
+  let clipboardValue: string | null = null;
 
   class Clipboard {
-    writeText(value) {
+    writeText(value: string) {
       clipboardValue = value;
       return Promise.resolve();
     }
   }
 
   const pageWindow = {
-    addEventListener(type, listener) {
+    addEventListener(type: string, listener: (event: unknown) => void) {
       listeners.set(type, [...(listeners.get(type) ?? []), listener]);
     },
     getSelection() {
@@ -60,7 +73,9 @@ async function exercise({
     },
   };
 
-  const context = vm.createContext({
+  const navigator = { clipboard: new Clipboard() };
+
+  runInSandbox(bundle, {
     Blob,
     Clipboard,
     ClipboardItem: class ClipboardItem {},
@@ -72,11 +87,9 @@ async function exercise({
     console,
     document: { activeElement: null },
     location: { hostname, origin: `https://${hostname}` },
-    navigator: { clipboard: new Clipboard() },
+    navigator,
     window: pageWindow,
   });
-
-  vm.runInContext(bundle, context);
 
   for (const listener of listeners.get("message") ?? []) {
     listener({
@@ -86,11 +99,11 @@ async function exercise({
     });
   }
 
-  await context.navigator.clipboard.writeText(sourceUrl);
-  assert.equal(clipboardValue, expectedUrl);
+  await navigator.clipboard.writeText(sourceUrl);
+  expect(clipboardValue).toBe(expectedUrl);
 }
 
-const cases = [
+const cases: RegressionCase[] = [
   {
     expectedUrl: "https://fixupx.com/example/status/123456789",
     hostname: "x.com",
@@ -204,7 +217,6 @@ const cases = [
     sourceUrl:
       "https://www.deviantart.com/artist/art/example-artwork-123456789?utm_source=share",
   },
-
   {
     expectedUrl: "https://facebed.com/example.user/posts/pfbid02AbCdEf123",
     hostname: "www.facebook.com",
@@ -213,7 +225,6 @@ const cases = [
     sourceUrl:
       "https://www.facebook.com/example.user/posts/pfbid02AbCdEf123?mibextid=abc",
   },
-
   {
     expectedUrl: "https://fxbsky.app/profile/example.com/post/3kexample",
     hostname: "bsky.app",
@@ -247,86 +258,91 @@ const cases = [
   },
 ];
 
-for (const testCase of cases) await exercise(testCase);
-
-const manifest = JSON.parse(
-  readFileSync(resolve("dist/manifest.json"), "utf8"),
-);
-const requiredNewPlatformMatches = [
-  "https://x.com/*",
-  "https://www.x.com/*",
-  "https://twitter.com/*",
-  "https://www.twitter.com/*",
-  "https://mobile.twitter.com/*",
-  "https://bilibili.com/*",
-  "https://www.bilibili.com/*",
-  "https://m.bilibili.com/*",
-  "https://b23.tv/*",
-  "https://deviantart.com/*",
-  "https://www.deviantart.com/*",
-  "https://*.deviantart.com/*",
-  "https://sta.sh/*",
-  "https://facebook.com/*",
-  "https://www.facebook.com/*",
-  "https://m.facebook.com/*",
-  "https://mbasic.facebook.com/*",
-  "https://pixiv.net/*",
-  "https://www.pixiv.net/*",
-  "https://pinterest.com/*",
-  "https://www.pinterest.com/*",
-  "https://*.pinterest.com/*",
-  "https://pin.it/*",
-  "https://youtube.com/*",
-  "https://www.youtube.com/*",
-  "https://m.youtube.com/*",
-  "https://twitch.tv/*",
-  "https://www.twitch.tv/*",
-  "https://m.twitch.tv/*",
-  "https://clips.twitch.tv/*",
-  "https://tumblr.com/*",
-  "https://www.tumblr.com/*",
-  "https://*.tumblr.com/*",
-];
-
-assert.deepEqual([...manifest.permissions].sort(), ["activeTab", "storage"]);
-assert.equal(manifest.action.default_popup, "popup.html");
-assert.equal(manifest.content_scripts.length, 2);
-assert.equal(manifest.content_scripts[0].world, "MAIN");
-assert.equal(manifest.content_scripts[1].world, "ISOLATED");
-assert.deepEqual(
-  manifest.content_scripts[0].matches,
-  manifest.content_scripts[1].matches,
-);
-for (const match of requiredNewPlatformMatches) {
-  assert.ok(manifest.content_scripts[0].matches.includes(match), match);
+for (const testCase of cases) {
+  test(`rewrites ${testCase.sourceUrl} on ${testCase.hostname}`, async () => {
+    await exercise(testCase);
+  });
 }
-assert.ok(!manifest.content_scripts[0].matches.includes("<all_urls>"));
 
-const popupHtml = readFileSync(resolve("dist/popup.html"), "utf8");
-const popupScriptPath = popupHtml.match(/src="\/([^\"]+\.js)"/)?.[1];
-assert.ok(popupScriptPath, "generated popup script");
-const popupBundle = readFileSync(resolve("dist", popupScriptPath), "utf8");
-const platformLabels = [
-  "X",
-  "Instagram",
-  "Bluesky",
-  "TikTok",
-  "Twitch",
-  "Tumblr",
-  "Pixiv",
-  "Pinterest",
-  "YouTube Community",
-  "Bilibili",
-  "DeviantArt",
-  "Facebook",
-  "Reddit",
-  "Threads",
-];
-for (const platformLabel of platformLabels) {
-  assert.ok(
-    popupBundle.includes(`Fix ${platformLabel} links automatically`),
-    platformLabel,
+test("generated manifest keeps MAIN/ISOLATED worlds and least-privilege host access", async () => {
+  const manifest = await Bun.file("dist/manifest.json").json() as {
+    action: { default_popup: string };
+    content_scripts: Array<{ matches: string[]; world: string }>;
+    permissions: string[];
+  };
+  const requiredNewPlatformMatches = [
+    "https://x.com/*",
+    "https://www.x.com/*",
+    "https://twitter.com/*",
+    "https://www.twitter.com/*",
+    "https://mobile.twitter.com/*",
+    "https://bilibili.com/*",
+    "https://www.bilibili.com/*",
+    "https://m.bilibili.com/*",
+    "https://b23.tv/*",
+    "https://deviantart.com/*",
+    "https://www.deviantart.com/*",
+    "https://*.deviantart.com/*",
+    "https://sta.sh/*",
+    "https://facebook.com/*",
+    "https://www.facebook.com/*",
+    "https://m.facebook.com/*",
+    "https://mbasic.facebook.com/*",
+    "https://pixiv.net/*",
+    "https://www.pixiv.net/*",
+    "https://pinterest.com/*",
+    "https://www.pinterest.com/*",
+    "https://*.pinterest.com/*",
+    "https://pin.it/*",
+    "https://youtube.com/*",
+    "https://www.youtube.com/*",
+    "https://m.youtube.com/*",
+    "https://twitch.tv/*",
+    "https://www.twitch.tv/*",
+    "https://m.twitch.tv/*",
+    "https://clips.twitch.tv/*",
+    "https://tumblr.com/*",
+    "https://www.tumblr.com/*",
+    "https://*.tumblr.com/*",
+  ];
+
+  expect([...manifest.permissions].sort()).toEqual(["activeTab", "storage"]);
+  expect(manifest.action.default_popup).toBe("popup.html");
+  expect(manifest.content_scripts).toHaveLength(2);
+  expect(manifest.content_scripts[0].world).toBe("MAIN");
+  expect(manifest.content_scripts[1].world).toBe("ISOLATED");
+  expect(manifest.content_scripts[0].matches).toEqual(
+    manifest.content_scripts[1].matches,
   );
-}
+  for (const match of requiredNewPlatformMatches) {
+    expect(manifest.content_scripts[0].matches).toContain(match);
+  }
+  expect(manifest.content_scripts[0].matches).not.toContain("<all_urls>");
+});
 
-console.log(`Verified ${cases.length} built clipboard regression cases.`);
+test("popup bundle includes every platform automatic-rewriting label", async () => {
+  const popupHtml = await Bun.file("dist/popup.html").text();
+  const popupScriptPath = popupHtml.match(/src="\/([^"]+\.js)"/)?.[1];
+  expect(popupScriptPath).toBeTruthy();
+
+  const popupBundle = await Bun.file(`dist/${popupScriptPath}`).text();
+  const platformLabels = [
+    "X",
+    "Instagram",
+    "Bluesky",
+    "TikTok",
+    "Twitch",
+    "Tumblr",
+    "Pixiv",
+    "Pinterest",
+    "YouTube Community",
+    "Bilibili",
+    "DeviantArt",
+    "Facebook",
+    "Reddit",
+    "Threads",
+  ];
+  for (const platformLabel of platformLabels) {
+    expect(popupBundle).toContain(`Fix ${platformLabel} links automatically`);
+  }
+});

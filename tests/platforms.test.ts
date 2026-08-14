@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { expect, test } from "bun:test";
 
 import {
   platformForHostname,
@@ -13,272 +12,234 @@ import {
 } from "../src/shared/settings.ts";
 
 test("X status links from current X and Twitter hosts become tracking-free FixupX links", () => {
-  assert.equal(platformForHostname("x.com"), "x");
-  assert.equal(platformForHostname("www.x.com"), "x");
-  assert.equal(platformForHostname("twitter.com"), "x");
-  assert.equal(platformForHostname("www.twitter.com"), "x");
-  assert.equal(platformForHostname("mobile.twitter.com"), "x");
+  expect(platformForHostname("x.com")).toBe("x");
+  expect(platformForHostname("www.x.com")).toBe("x");
+  expect(platformForHostname("twitter.com")).toBe("x");
+  expect(platformForHostname("www.twitter.com")).toBe("x");
+  expect(platformForHostname("mobile.twitter.com")).toBe("x");
 
   const expected = {
     fixedUrl: "https://fixupx.com/example/status/123456789",
     platform: "x",
   };
 
-  assert.deepEqual(
+  expect(
     rewriteSupportedUrl("https://x.com/example/status/123456789?s=20&t=abc"),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl("https://www.x.com/example/status/123456789/photo/1"),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl("https://twitter.com/example/status/123456789?s=20"),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl("https://www.twitter.com/example/status/123456789"),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl("https://mobile.twitter.com/example/status/123456789/video/1"),
-    expected,
-  );
-  assert.deepEqual(
-    rewriteSupportedUrl("https://x.com/i/web/status/123456789?s=20"),
-    {
-      fixedUrl: "https://fixupx.com/i/status/123456789",
-      platform: "x",
-    },
-  );
-  assert.deepEqual(
-    rewriteSupportedUrl("https://twitter.com/i/status/123456789"),
-    {
-      fixedUrl: "https://fixupx.com/i/status/123456789",
-      platform: "x",
-    },
-  );
+  ).toEqual(expected);
+  expect(rewriteSupportedUrl("https://x.com/i/web/status/123456789?s=20")).toEqual({
+    fixedUrl: "https://fixupx.com/i/status/123456789",
+    platform: "x",
+  });
+  expect(rewriteSupportedUrl("https://twitter.com/i/status/123456789")).toEqual({
+    fixedUrl: "https://fixupx.com/i/status/123456789",
+    platform: "x",
+  });
 });
 
 test("Instagram, Bluesky, TikTok, Reddit, and Threads keep rewriting after newer platforms were added", () => {
-  assert.deepEqual(
+  expect(
     rewriteSupportedUrl("https://www.instagram.com/p/ABC_123/?igsh=tracking"),
-    {
-      fixedUrl: "https://oginstagram.com/p/ABC_123/",
-      platform: "instagram",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://oginstagram.com/p/ABC_123/",
+    platform: "instagram",
+  });
+  expect(
     rewriteSupportedUrl("https://bsky.app/profile/example.com/post/3kexample?ref=share"),
-    {
-      fixedUrl: "https://fxbsky.app/profile/example.com/post/3kexample",
-      platform: "bluesky",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://fxbsky.app/profile/example.com/post/3kexample",
+    platform: "bluesky",
+  });
+  expect(
     rewriteSupportedUrl(
       "https://www.tiktok.com/@creator/video/7481234567890123456?tracking=1",
     ),
-    {
-      fixedUrl: "https://tnktok.com/@creator/video/7481234567890123456",
-      platform: "tiktok",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://tnktok.com/@creator/video/7481234567890123456",
+    platform: "tiktok",
+  });
+  expect(
     rewriteSupportedUrl(
       "https://www.reddit.com/r/example/comments/abc123/example_post/?share_id=tracking",
     ),
-    {
-      fixedUrl: "https://vxreddit.com/r/example/comments/abc123/example_post/",
-      platform: "reddit",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://vxreddit.com/r/example/comments/abc123/example_post/",
+    platform: "reddit",
+  });
+  expect(
     rewriteSupportedUrl("https://www.threads.net/@creator/post/ABC_123?xmt=tracking"),
-    {
-      fixedUrl: "https://vxthreads.com/@creator/post/ABC_123",
-      platform: "threads",
-    },
-  );
+  ).toEqual({
+    fixedUrl: "https://vxthreads.com/@creator/post/ABC_123",
+    platform: "threads",
+  });
 });
 
 test("Twitch clip links become tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("clips.twitch.tv"), "twitch");
-  assert.deepEqual(
+  expect(platformForHostname("clips.twitch.tv")).toBe("twitch");
+  expect(
     rewriteSupportedUrl(
       "https://clips.twitch.tv/DistinctiveClipSlug?tt_content=url&tt_medium=clips_api",
     ),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fclips.twitch.tv%2FDistinctiveClipSlug",
-      platform: "twitch",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl:
+      "https://fixembed.app/embed?url=https%3A%2F%2Fclips.twitch.tv%2FDistinctiveClipSlug",
+    platform: "twitch",
+  });
+  expect(
     rewriteSupportedUrl(
       "https://www.twitch.tv/example_channel/clip/DistinctiveClipSlug?filter=clips&range=7d",
     ),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fclips.twitch.tv%2FDistinctiveClipSlug",
-      platform: "twitch",
-    },
-  );
+  ).toEqual({
+    fixedUrl:
+      "https://fixembed.app/embed?url=https%3A%2F%2Fclips.twitch.tv%2FDistinctiveClipSlug",
+    platform: "twitch",
+  });
 });
 
 test("Tumblr post permalinks become canonical tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("example-blog.tumblr.com"), "tumblr");
+  expect(platformForHostname("example-blog.tumblr.com")).toBe("tumblr");
   const expected = {
     fixedUrl:
       "https://fixembed.app/embed?url=https%3A%2F%2Fwww.tumblr.com%2Fexample-blog%2F123456789012345678",
     platform: "tumblr",
   };
 
-  assert.deepEqual(
+  expect(
     rewriteSupportedUrl(
       "https://www.tumblr.com/example-blog/123456789012345678/a-post-slug?source=share",
     ),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl(
       "https://example-blog.tumblr.com/post/123456789012345678/a-post-slug#notes",
     ),
-    expected,
-  );
+  ).toEqual(expected);
 });
 
 test("Pixiv artwork links become canonical tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("www.pixiv.net"), "pixiv");
+  expect(platformForHostname("www.pixiv.net")).toBe("pixiv");
   const expected = {
     fixedUrl:
       "https://fixembed.app/embed?url=https%3A%2F%2Fwww.pixiv.net%2Fartworks%2F123456789",
     platform: "pixiv",
   };
 
-  assert.deepEqual(
+  expect(
     rewriteSupportedUrl(
       "https://www.pixiv.net/en/artworks/123456789?utm_source=share#viewer",
     ),
-    expected,
-  );
-  assert.deepEqual(
+  ).toEqual(expected);
+  expect(
     rewriteSupportedUrl(
       "https://www.pixiv.net/member_illust.php?mode=medium&illust_id=123456789",
     ),
-    expected,
-  );
+  ).toEqual(expected);
 });
 
 test("Pinterest Pin links become tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("br.pinterest.com"), "pinterest");
-  assert.deepEqual(
+  expect(platformForHostname("br.pinterest.com")).toBe("pinterest");
+  expect(
     rewriteSupportedUrl(
       "https://www.pinterest.com/pin/123456789012345678/?utm_source=share#details",
     ),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F123456789012345678",
-      platform: "pinterest",
-    },
-  );
-  assert.deepEqual(
-    rewriteSupportedUrl("https://pin.it/AbC123x?utm_campaign=share"),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fpin.it%2FAbC123x",
-      platform: "pinterest",
-    },
-  );
+  ).toEqual({
+    fixedUrl:
+      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F123456789012345678",
+    platform: "pinterest",
+  });
+  expect(rewriteSupportedUrl("https://pin.it/AbC123x?utm_campaign=share")).toEqual({
+    fixedUrl: "https://fixembed.app/embed?url=https%3A%2F%2Fpin.it%2FAbC123x",
+    platform: "pinterest",
+  });
 });
 
 test("YouTube Community post links become tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("m.youtube.com"), "youtube");
-  assert.deepEqual(
+  expect(platformForHostname("m.youtube.com")).toBe("youtube");
+  expect(
     rewriteSupportedUrl(
       "https://m.youtube.com/post/UgkxiCSRfD6g7SPlWGPDa3vbP7aIsytXRkvy?si=tracking#comments",
     ),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fwww.youtube.com%2Fpost%2FUgkxiCSRfD6g7SPlWGPDa3vbP7aIsytXRkvy",
-      platform: "youtube",
-    },
-  );
+  ).toEqual({
+    fixedUrl:
+      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.youtube.com%2Fpost%2FUgkxiCSRfD6g7SPlWGPDa3vbP7aIsytXRkvy",
+    platform: "youtube",
+  });
 });
 
 test("Bilibili video links become tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("m.bilibili.com"), "bilibili");
-  assert.deepEqual(
+  expect(platformForHostname("m.bilibili.com")).toBe("bilibili");
+  expect(
     rewriteSupportedUrl(
       "https://www.bilibili.com/video/BV1xx411c7mD/?spm_id_from=333.1007.0.0#reply",
     ),
-    {
-      fixedUrl:
-        "https://fixembed.app/embed?url=https%3A%2F%2Fwww.bilibili.com%2Fvideo%2FBV1xx411c7mD",
-      platform: "bilibili",
-    },
-  );
-  assert.deepEqual(
-    rewriteSupportedUrl("https://b23.tv/AbC123x?share_source=copy_web"),
-    {
-      fixedUrl: "https://fixembed.app/embed?url=https%3A%2F%2Fb23.tv%2FAbC123x",
-      platform: "bilibili",
-    },
-  );
+  ).toEqual({
+    fixedUrl:
+      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.bilibili.com%2Fvideo%2FBV1xx411c7mD",
+    platform: "bilibili",
+  });
+  expect(rewriteSupportedUrl("https://b23.tv/AbC123x?share_source=copy_web")).toEqual({
+    fixedUrl: "https://fixembed.app/embed?url=https%3A%2F%2Fb23.tv%2FAbC123x",
+    platform: "bilibili",
+  });
 });
 
 test("DeviantArt artwork links become tracking-free FixEmbed links", () => {
-  assert.equal(platformForHostname("artist.deviantart.com"), "deviantart");
+  expect(platformForHostname("artist.deviantart.com")).toBe("deviantart");
   const expectedArtwork = {
     fixedUrl:
       "https://fixembed.app/embed?url=https%3A%2F%2Fwww.deviantart.com%2Fartist%2Fart%2Fexample-artwork-123456789",
     platform: "deviantart",
   };
 
-  assert.deepEqual(
+  expect(
     rewriteSupportedUrl(
       "https://www.deviantart.com/artist/art/example-artwork-123456789?utm_source=share#comments",
     ),
-    expectedArtwork,
-  );
-  assert.deepEqual(
+  ).toEqual(expectedArtwork);
+  expect(
     rewriteSupportedUrl(
       "https://artist.deviantart.com/art/example-artwork-123456789?tracking=1",
     ),
-    expectedArtwork,
-  );
-  assert.deepEqual(rewriteSupportedUrl("https://sta.sh/01abcDEF?share=1"), {
-    fixedUrl:
-      "https://fixembed.app/embed?url=https%3A%2F%2Fsta.sh%2F01abcDEF",
+  ).toEqual(expectedArtwork);
+  expect(rewriteSupportedUrl("https://sta.sh/01abcDEF?share=1")).toEqual({
+    fixedUrl: "https://fixembed.app/embed?url=https%3A%2F%2Fsta.sh%2F01abcDEF",
     platform: "deviantart",
   });
 });
 
 test("Facebook public content links become tracking-free Facebed links", () => {
-  assert.equal(platformForHostname("m.facebook.com"), "facebook");
-  assert.deepEqual(
+  expect(platformForHostname("m.facebook.com")).toBe("facebook");
+  expect(
     rewriteSupportedUrl(
       "https://www.facebook.com/example.user/posts/pfbid02AbCdEf123?mibextid=abc#comments",
     ),
-    {
-      fixedUrl: "https://facebed.com/example.user/posts/pfbid02AbCdEf123",
-      platform: "facebook",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://facebed.com/example.user/posts/pfbid02AbCdEf123",
+    platform: "facebook",
+  });
+  expect(
     rewriteSupportedUrl("https://m.facebook.com/reel/123456789012345?locale=en_US"),
-    {
-      fixedUrl: "https://facebed.com/reel/123456789012345",
-      platform: "facebook",
-    },
-  );
-  assert.deepEqual(
+  ).toEqual({
+    fixedUrl: "https://facebed.com/reel/123456789012345",
+    platform: "facebook",
+  });
+  expect(
     rewriteSupportedUrl("https://www.facebook.com/share/p/AbCdEf123/?mibextid=abc"),
-    {
-      fixedUrl: "https://facebed.com/share/p/AbCdEf123",
-      platform: "facebook",
-    },
-  );
+  ).toEqual({
+    fixedUrl: "https://facebed.com/share/p/AbCdEf123",
+    platform: "facebook",
+  });
 });
 
 test("unsupported and malformed new-platform URLs fail open", () => {
@@ -301,13 +262,15 @@ test("unsupported and malformed new-platform URLs fail open", () => {
     " https://clips.twitch.tv/DistinctiveClipSlug",
   ];
 
-  for (const url of unsupportedUrls) assert.equal(rewriteSupportedUrl(url), null, url);
+  for (const url of unsupportedUrls) {
+    expect(rewriteSupportedUrl(url), url).toBeNull();
+  }
 
-  assert.equal(platformForHostname("youtube.com.evil.example"), null);
-  assert.equal(platformForHostname("notx.com"), null);
-  assert.equal(platformForHostname("nottwitter.com"), null);
-  assert.equal(platformForHostname("notfacebook.com"), null);
-  assert.equal(rewriteSupportedUrl("not a URL"), null);
+  expect(platformForHostname("youtube.com.evil.example")).toBeNull();
+  expect(platformForHostname("notx.com")).toBeNull();
+  expect(platformForHostname("nottwitter.com")).toBeNull();
+  expect(platformForHostname("notfacebook.com")).toBeNull();
+  expect(rewriteSupportedUrl("not a URL")).toBeNull();
 });
 
 test("Facebook supported permalink families preserve only required identifiers", () => {
@@ -327,7 +290,7 @@ test("Facebook supported permalink families preserve only required identifiers",
   ] as const;
 
   for (const [sourceUrl, fixedUrl] of cases) {
-    assert.deepEqual(rewriteSupportedUrl(sourceUrl), {
+    expect(rewriteSupportedUrl(sourceUrl)).toEqual({
       fixedUrl,
       platform: "facebook",
     });
@@ -352,16 +315,16 @@ test("every platform maps to an independent persisted setting", () => {
     ["threads", "autoFixThreads"],
   ] as const;
 
-  assert.equal(SETTINGS_KEYS.length, mappings.length);
+  expect(SETTINGS_KEYS).toHaveLength(mappings.length);
   for (const [platform, settingKey] of mappings) {
-    assert.equal(settingKeyForPlatform(platform), settingKey);
-    assert.equal(DEFAULT_SETTINGS[settingKey], true);
+    expect(settingKeyForPlatform(platform)).toBe(settingKey);
+    expect(DEFAULT_SETTINGS[settingKey]).toBe(true);
   }
 
   const hydrated = settingsFromStorage({
     autoFixFacebook: false,
     autoFixTwitch: "not a boolean",
   });
-  assert.equal(hydrated.autoFixFacebook, false);
-  assert.equal(hydrated.autoFixTwitch, true);
+  expect(hydrated.autoFixFacebook).toBe(false);
+  expect(hydrated.autoFixTwitch).toBe(true);
 });
