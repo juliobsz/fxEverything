@@ -14,27 +14,32 @@
 
 <p align="center">
     <a href="https://chromewebstore.google.com/detail/ogbkdfnmllglocipleheladghcjgjabk">
-        <strong>✨ Get FxEverything for Chrome →</strong>
+        <strong>Get FxEverything for Chrome</strong>
     </a>
 </p>
 
 Supported platforms:
 
-- X posts: `x.com` → `fixupx.com`
-- Instagram posts, Reels, and carousels: `instagram.com` → `oginstagram.com`
-- Bluesky posts, replies, and quote posts: `bsky.app` → `fxbsky.app`
-- TikTok videos and photo posts: `tiktok.com` → `tnktok.com`
-- Reddit posts and share links: `reddit.com` → `vxreddit.com`
-- Threads posts: `threads.com` or `threads.net` → `vxthreads.com`
+- X posts: `x.com` or `twitter.com` -> `fixupx.com`
+- Instagram posts, Reels, and carousels: `instagram.com` -> `oginstagram.com`
+- Bluesky posts, replies, and quote posts: `bsky.app` -> `fxbsky.app`
+- TikTok videos and photo posts: `tiktok.com` -> `tnktok.com`
+- Twitch clips: `twitch.tv` and `clips.twitch.tv` -> `fixembed.app`
+- Tumblr posts: `tumblr.com` blogs -> `fixembed.app`
+- Pixiv artworks: `pixiv.net` -> `fixembed.app`
+- Pinterest Pins and `pin.it` shares -> `fixembed.app`
+- YouTube Community posts: `youtube.com/post/...` -> `fixembed.app`
+- Bilibili videos and `b23.tv` shares -> `fixembed.app`
+- DeviantArt artworks and `sta.sh` shares -> `fixembed.app`
+- Facebook public user posts, Reels, `/share/p/` links, group posts, and story/permalink links -> `facebed.com`
+- Reddit posts and share links: `reddit.com` -> `vxreddit.com`
+- Threads posts: `threads.com` or `threads.net` -> `vxthreads.com`
 
-Normal browsing is unchanged. Unsupported or uncertain links are copied
-unchanged.
+Normal browsing is unchanged. Unsupported, malformed, private, profile, and unrelated links are copied unchanged.
 
 ## Why?
 
-Many chat apps and communities cannot create rich previews for social posts.
-FxEverything fixes the link when you copy it, so the post is more likely to
-embed cleanly wherever you share it, without changing how you browse.
+Many chat apps and communities cannot create rich previews for social posts. FxEverything fixes a supported link when you copy it, so it is more likely to embed cleanly wherever you share it, without changing how you browse.
 
 ## Install locally
 
@@ -49,36 +54,24 @@ embed cleanly wherever you share it, without changing how you browse.
 ```sh
 npm run dev
 npm run typecheck
+npm test
 npm run build
 ```
 
-The release-ready archive is generated at
-`release/fxeverything-x.x.x.zip`.
+The release-ready archive is generated at `release/fxeverything-x.x.x.zip`.
 
 <details>
     <summary><b>Privacy and permissions</b></summary>
 
-URL processing is local. The extension has no analytics, accounts, backend, or
-extension-owned network requests. It stores only the six automatic-rewriting
-preferences. See [`PRIVACY.md`](PRIVACY.md).
+URL recognition and rewriting happen locally. The extension has no analytics, accounts, backend, or extension-owned network requests. It stores only the fourteen per-platform automatic-rewriting preferences. See [`PRIVACY.md`](PRIVACY.md).
 
-The extension requests:
-
-- access only on the supported X, Instagram, Bluesky, TikTok, Reddit, and
-  Threads hosts;
-- `storage` for the six preferences;
-- `activeTab` so the popup can copy a fixed link for the current page.
-
-It does not request clipboard permissions or access to browsing history.
+The extension requests access only on supported platform hosts, `storage` for the fourteen preferences, and `activeTab` so the popup can copy a Fixed Link for the current page. It does not request clipboard permissions, browsing-history access, cookies, or all-sites access.
 </details>
 
 <details>
     <summary><b>Independence</b></summary>
 
-FxEverything is not affiliated with X, Instagram, Bluesky, TikTok, Reddit,
-Threads, FixupX, OGInstagram, FxBluesky, fxTikTok, vxreddit, vxThreads,
-or Discord. The third-party embed services can change
-or become unavailable.
+FxEverything is not affiliated with any supported social platform, Discord, or the independent Embed Services FixupX, OGInstagram, FxBluesky, fxTikTok, FixEmbed, Facebed, vxreddit, or vxThreads. Third-party Embed Services can change or become unavailable.
 
 </details>
 

@@ -1,6 +1,6 @@
 {
   "name": "fxeverything",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "type": "module",
   "description": "Silently rewrite social-media post links for richer embeds.",
@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "test": "npm run test:platforms && npm run test:regression",
+    "test:platforms": "node --test tests/platforms.test.ts",
+    "test:regression": "npm run build && node tests/content-regression.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

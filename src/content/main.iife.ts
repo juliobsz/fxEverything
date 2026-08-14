@@ -18,7 +18,7 @@ type WindowWithInterceptor = Window & {
   __fxEverythingClipboardV3__?: InterceptorState;
 };
 
-const LEGACY_SETTINGS_MESSAGE_TYPE = "fxeverything:settings:v2";
+const LEGACY_SETTINGS_MESSAGE_TYPE = "fxeverything:settings:v3";
 
 const platform = platformForHostname(location.hostname);
 

@@ -12,7 +12,7 @@ type CopyState = "idle" | "copying" | "copied" | "unsupported" | "failed";
 
 const COPY_LABELS: Record<CopyState, string> = {
   idle: "Copy fixed link for this page",
-  copying: "Copying…",
+  copying: "Copying...",
   copied: "Copied",
   unsupported: "This page isn't a supported post",
   failed: "Couldn't copy this link",
@@ -40,6 +40,18 @@ export function App() {
       if (areaName !== "local") return;
 
       setSettings((current) => ({
+        autoFixBilibili: booleanChange(
+          changes.autoFixBilibili,
+          current.autoFixBilibili,
+        ),
+        autoFixDeviantArt: booleanChange(
+          changes.autoFixDeviantArt,
+          current.autoFixDeviantArt,
+        ),
+        autoFixFacebook: booleanChange(
+          changes.autoFixFacebook,
+          current.autoFixFacebook,
+        ),
         autoFixBluesky: booleanChange(
           changes.autoFixBluesky,
           current.autoFixBluesky,
@@ -47,6 +59,14 @@ export function App() {
         autoFixInstagram: booleanChange(
           changes.autoFixInstagram,
           current.autoFixInstagram,
+        ),
+        autoFixPixiv: booleanChange(
+          changes.autoFixPixiv,
+          current.autoFixPixiv,
+        ),
+        autoFixPinterest: booleanChange(
+          changes.autoFixPinterest,
+          current.autoFixPinterest,
         ),
         autoFixReddit: booleanChange(
           changes.autoFixReddit,
@@ -59,6 +79,18 @@ export function App() {
         autoFixTikTok: booleanChange(
           changes.autoFixTikTok,
           current.autoFixTikTok,
+        ),
+        autoFixTwitch: booleanChange(
+          changes.autoFixTwitch,
+          current.autoFixTwitch,
+        ),
+        autoFixTumblr: booleanChange(
+          changes.autoFixTumblr,
+          current.autoFixTumblr,
+        ),
+        autoFixYouTube: booleanChange(
+          changes.autoFixYouTube,
+          current.autoFixYouTube,
         ),
         autoFixX: booleanChange(changes.autoFixX, current.autoFixX),
       }));
@@ -101,7 +133,7 @@ export function App() {
   };
 
   return (
-    <main className="w-88 bg-light p-4 text-stone-950 dark:bg-[#0A0A10] dark:text-stone-50">
+    <main className="max-h-150 w-88 overflow-y-auto bg-light p-4 text-stone-950 dark:bg-[#0A0A10] dark:text-stone-50">
       <header className="flex items-center justify-between gap-3 border-b border-stone-200 pb-4 dark:border-stone-800">
         <h1 className="text-xl font-semibold tracking-[-0.02em]">
           FxEverything
@@ -130,6 +162,31 @@ export function App() {
           }
         />
         <Switch
+          checked={settings.autoFixPixiv}
+          label="Fix Pixiv links automatically"
+          onChange={(checked) => updateSetting("autoFixPixiv", checked)}
+        />
+        <Switch
+          checked={settings.autoFixPinterest}
+          label="Fix Pinterest links automatically"
+          onChange={(checked) => updateSetting("autoFixPinterest", checked)}
+        />
+        <Switch
+          checked={settings.autoFixBilibili}
+          label="Fix Bilibili links automatically"
+          onChange={(checked) => updateSetting("autoFixBilibili", checked)}
+        />
+        <Switch
+          checked={settings.autoFixDeviantArt}
+          label="Fix DeviantArt links automatically"
+          onChange={(checked) => updateSetting("autoFixDeviantArt", checked)}
+        />
+        <Switch
+          checked={settings.autoFixFacebook}
+          label="Fix Facebook links automatically"
+          onChange={(checked) => updateSetting("autoFixFacebook", checked)}
+        />
+        <Switch
           checked={settings.autoFixBluesky}
           label="Fix Bluesky links automatically"
           onChange={(checked) => updateSetting("autoFixBluesky", checked)}
@@ -138,6 +195,21 @@ export function App() {
           checked={settings.autoFixTikTok}
           label="Fix TikTok links automatically"
           onChange={(checked) => updateSetting("autoFixTikTok", checked)}
+        />
+        <Switch
+          checked={settings.autoFixTwitch}
+          label="Fix Twitch links automatically"
+          onChange={(checked) => updateSetting("autoFixTwitch", checked)}
+        />
+        <Switch
+          checked={settings.autoFixTumblr}
+          label="Fix Tumblr links automatically"
+          onChange={(checked) => updateSetting("autoFixTumblr", checked)}
+        />
+        <Switch
+          checked={settings.autoFixYouTube}
+          label="Fix YouTube Community links automatically"
+          onChange={(checked) => updateSetting("autoFixYouTube", checked)}
         />
         <Switch
           checked={settings.autoFixReddit}
