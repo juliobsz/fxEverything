@@ -36,8 +36,10 @@ it's at it. You keep using the site's own **Copy link** button; nothing about br
 ## Demo
 
 <p align="center">
-<video src="https://github.com/user-attachments/assets/d63a5ece-1b17-4a4d-ba75-885b47135fd4" width="70%" controls></video>
+  <a href="https://youtu.be/C1xr8CyFl6Q"><img src="https://img.youtube.com/vi/C1xr8CyFl6Q/maxresdefault.jpg" alt="Watch the Fx Everything demo on YouTube" width="80%"></a>
 </p>
+
+<p align="center">Click the thumbnail to watch the demo on YouTube</p>
 
 ## How it works
 
