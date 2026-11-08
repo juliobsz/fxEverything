@@ -1,0 +1,176 @@
+{
+  "extName": {
+    "message": "Fx Everything"
+  },
+  "extShortName": {
+    "message": "Fx Everything"
+  },
+  "extDescription": {
+    "message": "Copie links que mostram prévias completas no Discord, Telegram e outros apps, de 14 redes sociais."
+  },
+  "commandCopy": {
+    "message": "Copiar o link corrigido do post atual"
+  },
+  "menuCopyLink": {
+    "message": "Copiar link corrigido"
+  },
+  "menuCopyPage": {
+    "message": "Copiar link corrigido deste post"
+  },
+  "toastCopied": {
+    "message": "Link corrigido copiado"
+  },
+  "toastUndo": {
+    "message": "Desfazer"
+  },
+  "toastNotPost": {
+    "message": "Esta página não é um post"
+  },
+  "toastNotPostDetail": {
+    "message": "Abra o post ou clique com o botão direito no link dele"
+  },
+  "toastNotSupportedLink": {
+    "message": "Este link não é de um post compatível"
+  },
+  "toastCopyFailed": {
+    "message": "Não foi possível copiar o link"
+  },
+  "toastCopyFailedDetail": {
+    "message": "Clique na página e tente de novo"
+  },
+  "popupStatusOn": {
+    "message": "Corrigindo links"
+  },
+  "popupStatusPaused": {
+    "message": "Pausado"
+  },
+  "popupPause": {
+    "message": "Pausar correção automática"
+  },
+  "popupResume": {
+    "message": "Retomar correção automática"
+  },
+  "popupThisTab": {
+    "message": "Esta aba"
+  },
+  "popupPostTitle": {
+    "message": "Post do $1"
+  },
+  "popupFrom": {
+    "message": "De"
+  },
+  "popupTo": {
+    "message": "Para"
+  },
+  "popupCopy": {
+    "message": "Copiar link corrigido"
+  },
+  "popupCopied": {
+    "message": "Copiado"
+  },
+  "popupCopyFailed": {
+    "message": "Não deu para copiar, tente de novo"
+  },
+  "popupPreview": {
+    "message": "Visualizar"
+  },
+  "popupNotPostTitle": {
+    "message": "$1, mas não é um post"
+  },
+  "popupNotPostBody": {
+    "message": "Abra um post para copiar o link corrigido aqui, ou use o botão Copiar link do próprio $1: ele é corrigido na hora."
+  },
+  "popupNoPostTitle": {
+    "message": "Esta aba não tem um post compatível"
+  },
+  "popupNoPostBody": {
+    "message": "Clique com o botão direito em um link de post e escolha Copiar link corrigido, ou use o botão Copiar link do próprio site."
+  },
+  "popupPlatforms": {
+    "message": "Plataformas"
+  },
+  "popupPlatformCount": {
+    "message": "$1 de $2 ativas"
+  },
+  "popupTurnAllOff": {
+    "message": "Desativar todas"
+  },
+  "popupTurnAllOn": {
+    "message": "Ativar todas"
+  },
+  "popupPlatformToggle": {
+    "message": "Corrigir links do $1 automaticamente"
+  },
+  "popupPreferences": {
+    "message": "Preferências"
+  },
+  "popupShortcut": {
+    "message": "Atalho para copiar"
+  },
+  "popupShortcutNotSet": {
+    "message": "Não definido"
+  },
+  "popupShortcutChange": {
+    "message": "Alterar"
+  },
+  "popupShortcutSet": {
+    "message": "Definir"
+  },
+  "popupConfirmation": {
+    "message": "Confirmação na página"
+  },
+  "popupConfirmationDetail": {
+    "message": "Um aviso rápido com Desfazer depois de corrigir um link"
+  },
+  "popupConfirmationLabel": {
+    "message": "Mostrar uma confirmação depois de corrigir um link"
+  },
+  "popupVersion": {
+    "message": "Versão $1"
+  },
+  "popupReport": {
+    "message": "Relatar um link quebrado"
+  },
+  "covers_x": {
+    "message": "Posts"
+  },
+  "covers_instagram": {
+    "message": "Posts e reels"
+  },
+  "covers_bluesky": {
+    "message": "Posts"
+  },
+  "covers_tiktok": {
+    "message": "Vídeos e fotos"
+  },
+  "covers_reddit": {
+    "message": "Posts e links de compartilhamento"
+  },
+  "covers_threads": {
+    "message": "Posts"
+  },
+  "covers_facebook": {
+    "message": "Posts e reels"
+  },
+  "covers_pixiv": {
+    "message": "Obras"
+  },
+  "covers_tumblr": {
+    "message": "Posts"
+  },
+  "covers_deviantart": {
+    "message": "Obras"
+  },
+  "covers_bilibili": {
+    "message": "Vídeos"
+  },
+  "covers_twitch": {
+    "message": "Clipes"
+  },
+  "covers_pinterest": {
+    "message": "Pins"
+  },
+  "covers_youtube": {
+    "message": "Posts da comunidade"
+  }
+}

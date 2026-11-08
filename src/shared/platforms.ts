@@ -19,6 +19,194 @@ export interface RewrittenLink {
   platform: Platform;
 }
 
+export interface PlatformInfo {
+  id: Platform;
+  /** Human-readable platform name. */
+  name: string;
+  /** What kinds of posts are fixed, shown in the popup. */
+  covers: string;
+  /** Embed service domain that Fixed Links point to. */
+  service: string;
+  /** Brand accent used for the popup's platform glyph. */
+  color: string;
+  /** Chrome match patterns for pages where this platform runs. */
+  matches: readonly string[];
+}
+
+const FIXEMBED = "fixembed.app";
+
+export const PLATFORMS: readonly PlatformInfo[] = [
+  {
+    id: "x",
+    name: "X / Twitter",
+    covers: "Posts",
+    service: "fixupx.com",
+    color: "#0f1419",
+    matches: [
+      "https://x.com/*",
+      "https://www.x.com/*",
+      "https://mobile.x.com/*",
+      "https://twitter.com/*",
+      "https://www.twitter.com/*",
+      "https://mobile.twitter.com/*",
+    ],
+  },
+  {
+    id: "instagram",
+    name: "Instagram",
+    covers: "Posts & reels",
+    service: "oginstagram.com",
+    color: "#e1306c",
+    matches: ["https://instagram.com/*", "https://www.instagram.com/*"],
+  },
+  {
+    id: "bluesky",
+    name: "Bluesky",
+    covers: "Posts",
+    service: "fxbsky.app",
+    color: "#0a7aff",
+    matches: ["https://bsky.app/*"],
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    covers: "Videos & photos",
+    service: "tnktok.com",
+    color: "#111111",
+    matches: [
+      "https://tiktok.com/*",
+      "https://www.tiktok.com/*",
+      "https://m.tiktok.com/*",
+    ],
+  },
+  {
+    id: "reddit",
+    name: "Reddit",
+    covers: "Posts & share links",
+    service: "vxreddit.com",
+    color: "#ff4500",
+    matches: ["https://reddit.com/*", "https://www.reddit.com/*"],
+  },
+  {
+    id: "threads",
+    name: "Threads",
+    covers: "Posts",
+    service: "vxthreads.com",
+    color: "#101010",
+    matches: [
+      "https://threads.com/*",
+      "https://www.threads.com/*",
+      "https://threads.net/*",
+      "https://www.threads.net/*",
+    ],
+  },
+  {
+    id: "facebook",
+    name: "Facebook",
+    covers: "Posts & reels",
+    service: "facebed.com",
+    color: "#1877f2",
+    matches: [
+      "https://facebook.com/*",
+      "https://www.facebook.com/*",
+      "https://m.facebook.com/*",
+      "https://mbasic.facebook.com/*",
+    ],
+  },
+  {
+    id: "pixiv",
+    name: "Pixiv",
+    covers: "Artworks",
+    service: "phixiv.net",
+    color: "#0096fa",
+    matches: ["https://pixiv.net/*", "https://www.pixiv.net/*"],
+  },
+  {
+    id: "tumblr",
+    name: "Tumblr",
+    covers: "Posts",
+    service: "tpmblr.com",
+    color: "#36465d",
+    matches: [
+      "https://tumblr.com/*",
+      "https://www.tumblr.com/*",
+      "https://*.tumblr.com/*",
+    ],
+  },
+  {
+    id: "deviantart",
+    name: "DeviantArt",
+    covers: "Artworks",
+    service: "fixdeviantart.com",
+    color: "#05cc47",
+    matches: [
+      "https://deviantart.com/*",
+      "https://www.deviantart.com/*",
+      "https://*.deviantart.com/*",
+      "https://sta.sh/*",
+    ],
+  },
+  {
+    id: "bilibili",
+    name: "Bilibili",
+    covers: "Videos",
+    service: "vxbilibili.com",
+    color: "#00a1d6",
+    matches: [
+      "https://bilibili.com/*",
+      "https://www.bilibili.com/*",
+      "https://m.bilibili.com/*",
+      "https://b23.tv/*",
+    ],
+  },
+  {
+    id: "twitch",
+    name: "Twitch",
+    covers: "Clips",
+    service: FIXEMBED,
+    color: "#9146ff",
+    matches: [
+      "https://twitch.tv/*",
+      "https://www.twitch.tv/*",
+      "https://m.twitch.tv/*",
+      "https://clips.twitch.tv/*",
+    ],
+  },
+  {
+    id: "pinterest",
+    name: "Pinterest",
+    covers: "Pins",
+    service: FIXEMBED,
+    color: "#e60023",
+    matches: [
+      "https://pinterest.com/*",
+      "https://www.pinterest.com/*",
+      "https://*.pinterest.com/*",
+      "https://pin.it/*",
+    ],
+  },
+  {
+    id: "youtube",
+    name: "YouTube",
+    covers: "Community posts",
+    service: FIXEMBED,
+    color: "#ff0000",
+    matches: [
+      "https://youtube.com/*",
+      "https://www.youtube.com/*",
+      "https://m.youtube.com/*",
+    ],
+  },
+];
+
+export const SUPPORTED_PAGE_MATCHES: readonly string[] = PLATFORMS.flatMap(
+  (platform) => platform.matches,
+);
+
+export function platformInfo(platform: Platform): PlatformInfo {
+  return PLATFORMS.find((info) => info.id === platform)!;
+}
+
 const X_SOURCE_HOSTS = new Set([
   "x.com",
   "www.x.com",
@@ -39,24 +227,15 @@ const TWITCH_SOURCE_HOSTS = new Set([
   "m.twitch.tv",
   "clips.twitch.tv",
 ]);
-const REDDIT_SOURCE_HOSTS = new Set([
-  "reddit.com",
-  "www.reddit.com",
-]);
+const REDDIT_SOURCE_HOSTS = new Set(["reddit.com", "www.reddit.com"]);
 const THREADS_SOURCE_HOSTS = new Set([
   "threads.com",
   "www.threads.com",
   "threads.net",
   "www.threads.net",
 ]);
-const INSTAGRAM_SOURCE_HOSTS = new Set([
-  "instagram.com",
-  "www.instagram.com",
-]);
-const PIXIV_SOURCE_HOSTS = new Set([
-  "pixiv.net",
-  "www.pixiv.net",
-]);
+const INSTAGRAM_SOURCE_HOSTS = new Set(["instagram.com", "www.instagram.com"]);
+const PIXIV_SOURCE_HOSTS = new Set(["pixiv.net", "www.pixiv.net"]);
 const YOUTUBE_SOURCE_HOSTS = new Set([
   "youtube.com",
   "www.youtube.com",
@@ -113,27 +292,18 @@ export function platformForHostname(hostname: string): Platform | null {
   const normalizedHostname = hostname.toLowerCase();
 
   if (X_SOURCE_HOSTS.has(normalizedHostname)) return "x";
-
   if (normalizedHostname === BLUESKY_SOURCE_HOST) return "bluesky";
-
   if (INSTAGRAM_SOURCE_HOSTS.has(normalizedHostname)) return "instagram";
-
   if (PIXIV_SOURCE_HOSTS.has(normalizedHostname)) return "pixiv";
-
   if (isPinterestHostname(normalizedHostname)) return "pinterest";
-
   if (YOUTUBE_SOURCE_HOSTS.has(normalizedHostname)) return "youtube";
-
   if (BILIBILI_SOURCE_HOSTS.has(normalizedHostname)) return "bilibili";
   if (isDeviantArtHostname(normalizedHostname)) return "deviantart";
   if (TIKTOK_SOURCE_HOSTS.has(normalizedHostname)) return "tiktok";
   if (FACEBOOK_SOURCE_HOSTS.has(normalizedHostname)) return "facebook";
-
   if (isTumblrHostname(normalizedHostname)) return "tumblr";
   if (TWITCH_SOURCE_HOSTS.has(normalizedHostname)) return "twitch";
-
   if (REDDIT_SOURCE_HOSTS.has(normalizedHostname)) return "reddit";
-
   if (THREADS_SOURCE_HOSTS.has(normalizedHostname)) return "threads";
 
   return null;
@@ -146,10 +316,10 @@ function fixEmbedUrl(sourceUrl: string): string {
 }
 
 function rewriteXUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !X_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!X_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
   const webStatusMatch = url.pathname.match(
-    /^\/i\/web\/status\/([0-9]+)(?:\/(?:photo|video)\/[0-9]+)?\/?$/,
+    /^\/i\/(?:web\/)?status\/([0-9]+)(?:\/(?:photo|video)\/[0-9]+)?\/?$/,
   );
   if (webStatusMatch) return `https://fixupx.com/i/status/${webStatusMatch[1]}`;
 
@@ -164,10 +334,11 @@ function rewriteXUrl(url: URL): string | null {
 }
 
 function rewriteInstagramUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !INSTAGRAM_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!INSTAGRAM_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
+  // Also accepts profile-scoped links such as /username/p/CODE/ and /username/reel/CODE/.
   const match = url.pathname.match(
-    /^\/(p|reel|reels)\/([A-Za-z0-9_-]+)\/?$/,
+    /^\/(?:[A-Za-z0-9._]{1,30}\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)\/?$/,
   );
 
   if (!match) return null;
@@ -195,7 +366,7 @@ function isBlueskyActor(actor: string): boolean {
 }
 
 function rewriteBlueskyUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || url.hostname.toLowerCase() !== BLUESKY_SOURCE_HOST) return null;
+  if (url.hostname.toLowerCase() !== BLUESKY_SOURCE_HOST) return null;
 
   const match = url.pathname.match(
     /^\/profile\/([^/]+)\/post\/([A-Za-z0-9._:~-]{1,512})\/?$/,
@@ -210,7 +381,7 @@ function rewriteBlueskyUrl(url: URL): string | null {
 }
 
 function rewriteTwitchUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !TWITCH_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!TWITCH_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
   const clipMatch = url.hostname.toLowerCase() === "clips.twitch.tv"
     ? url.pathname.match(/^\/([A-Za-z0-9_-]{1,100})\/?$/)
@@ -226,33 +397,29 @@ function rewriteTwitchUrl(url: URL): string | null {
 
 function rewriteTumblrUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
-  if (url.protocol !== "https:" || !isTumblrHostname(hostname)) return null;
+  if (!isTumblrHostname(hostname)) return null;
+
+  let blogName: string | undefined;
+  let postId: string | undefined;
 
   if (hostname === "tumblr.com" || hostname === "www.tumblr.com") {
     const match = url.pathname.match(
-      /^\/([A-Za-z0-9-]{1,64})\/([0-9]{1,30})(?:\/[^/]+)?\/?$/,
+      /^\/(?:blog\/view\/)?([A-Za-z0-9-]{1,64})\/([0-9]{1,30})(?:\/[^/]+)?\/?$/,
     );
-
-    if (!match) return null;
-
-    const [, blogName, postId] = match;
-    return fixEmbedUrl(`https://www.tumblr.com/${blogName}/${postId}`);
+    [, blogName, postId] = match ?? [];
+  } else {
+    const blogMatch = hostname.match(/^([A-Za-z0-9-]{1,64})\.tumblr\.com$/);
+    const postMatch = url.pathname.match(/^\/post\/([0-9]{1,30})(?:\/[^/]+)?\/?$/);
+    blogName = blogMatch?.[1];
+    postId = postMatch?.[1];
   }
 
-  const blogMatch = hostname.match(/^([A-Za-z0-9-]{1,64})\.tumblr\.com$/);
-  const postMatch = url.pathname.match(
-    /^\/post\/([0-9]{1,30})(?:\/[^/]+)?\/?$/,
-  );
-
-  if (!blogMatch || !postMatch) return null;
-
-  const [, blogName] = blogMatch;
-  const [, postId] = postMatch;
-  return fixEmbedUrl(`https://www.tumblr.com/${blogName}/${postId}`);
+  if (!blogName || !postId) return null;
+  return `https://www.tpmblr.com/${blogName}/${postId}`;
 }
 
 function rewritePixivUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !PIXIV_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!PIXIV_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
   const artworkMatch = url.pathname.match(
     /^\/(?:[A-Za-z]{2}(?:-[A-Za-z]{2})?\/)?artworks\/([0-9]{1,30})\/?$/,
@@ -265,12 +432,12 @@ function rewritePixivUrl(url: URL): string | null {
   }
 
   if (!artworkId) return null;
-  return fixEmbedUrl(`https://www.pixiv.net/artworks/${artworkId}`);
+  return `https://phixiv.net/artworks/${artworkId}`;
 }
 
 function rewritePinterestUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
-  if (url.protocol !== "https:" || !isPinterestHostname(hostname)) return null;
+  if (!isPinterestHostname(hostname)) return null;
 
   if (hostname === "pin.it") {
     const match = url.pathname.match(/^\/([A-Za-z0-9_-]{2,100})\/?$/);
@@ -278,23 +445,28 @@ function rewritePinterestUrl(url: URL): string | null {
     return fixEmbedUrl(`https://pin.it/${match[1]}`);
   }
 
-  const match = url.pathname.match(/^\/pin\/([0-9]{1,30})\/?$/);
+  const match = url.pathname.match(/^\/pin\/(?:[A-Za-z0-9-]*--)?([0-9]{1,30})\/?$/);
   if (!match) return null;
   return fixEmbedUrl(`https://www.pinterest.com/pin/${match[1]}`);
 }
 
 function rewriteYouTubeUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !YOUTUBE_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!YOUTUBE_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
-  const match = url.pathname.match(/^\/post\/(Ugk[A-Za-z0-9_-]{20,100})\/?$/);
-  if (!match) return null;
-  const [, postId] = match;
+  const directMatch = url.pathname.match(/^\/post\/(Ug[A-Za-z0-9_-]{20,100})\/?$/);
+  const channelMatch = url.pathname.match(
+    /^\/(?:@[^/]+|channel\/[^/]+)\/community$/,
+  );
+  const postId = directMatch?.[1]
+    ?? (channelMatch ? url.searchParams.get("lb") : null);
+
+  if (!postId || !/^Ug[A-Za-z0-9_-]{20,100}$/.test(postId)) return null;
   return fixEmbedUrl(`https://www.youtube.com/post/${postId}`);
 }
 
 function rewriteBilibiliUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
-  if (url.protocol !== "https:" || !BILIBILI_SOURCE_HOSTS.has(hostname)) return null;
+  if (!BILIBILI_SOURCE_HOSTS.has(hostname)) return null;
 
   if (hostname === "b23.tv") {
     const match = url.pathname.match(/^\/([A-Za-z0-9_-]{2,100})\/?$/);
@@ -304,13 +476,16 @@ function rewriteBilibiliUrl(url: URL): string | null {
 
   const match = url.pathname.match(/^\/video\/(BV[A-Za-z0-9]{10}|av[0-9]{1,30})\/?$/);
   if (!match) return null;
-  const [, videoId] = match;
-  return fixEmbedUrl(`https://www.bilibili.com/video/${videoId}`);
+
+  const fixedUrl = new URL(`https://vxbilibili.com/video/${match[1]}`);
+  const part = url.searchParams.get("p");
+  if (part && /^[1-9][0-9]{0,3}$/.test(part)) fixedUrl.searchParams.set("p", part);
+  return fixedUrl.toString();
 }
 
 function rewriteDeviantArtUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
-  if (url.protocol !== "https:" || !isDeviantArtHostname(hostname)) return null;
+  if (!isDeviantArtHostname(hostname)) return null;
 
   if (hostname === "sta.sh") {
     const match = url.pathname.match(/^\/([A-Za-z0-9_-]{2,100})\/?$/);
@@ -323,23 +498,24 @@ function rewriteDeviantArtUrl(url: URL): string | null {
     : null;
   if (modernMatch) {
     const [, artist, artworkSlug] = modernMatch;
-    return fixEmbedUrl(`https://www.deviantart.com/${artist}/art/${artworkSlug}`);
+    return `https://fixdeviantart.com/${artist}/art/${artworkSlug}`;
   }
 
   const legacyHostMatch = hostname.match(/^([A-Za-z0-9_-]{1,64})\.deviantart\.com$/);
   const legacyArtworkMatch = url.pathname.match(/^\/art\/([A-Za-z0-9_-]{1,200})\/?$/);
-  if (!legacyHostMatch || !legacyArtworkMatch) return null;
-  return fixEmbedUrl(`https://www.deviantart.com/${legacyHostMatch[1]}/art/${legacyArtworkMatch[1]}`);
+  if (!legacyHostMatch || !legacyArtworkMatch || legacyHostMatch[1] === "www") return null;
+  return `https://fixdeviantart.com/${legacyHostMatch[1]}/art/${legacyArtworkMatch[1]}`;
 }
 
 function rewriteFacebookUrl(url: URL): string | null {
   const hostname = url.hostname.toLowerCase();
-  if (url.protocol !== "https:" || !FACEBOOK_SOURCE_HOSTS.has(hostname)) return null;
+  if (!FACEBOOK_SOURCE_HOSTS.has(hostname)) return null;
 
   const canonicalPath = url.pathname.replace(/\/+$/, "") || "/";
   const firstSegment = canonicalPath.split("/")[1]?.toLowerCase() ?? "";
   const isUserPost = !FACEBOOK_RESERVED_ROUTE_NAMES.has(firstSegment)
     && /^\/[A-Za-z0-9._-]{1,100}\/posts\/[A-Za-z0-9._-]{2,200}$/.test(canonicalPath);
+  // Only URL shapes Facebed documents as supported.
   const directPathPatterns = [
     /^\/reel\/[A-Za-z0-9._-]{2,200}$/,
     /^\/share\/p\/[A-Za-z0-9._-]{2,200}$/,
@@ -364,7 +540,7 @@ function rewriteFacebookUrl(url: URL): string | null {
 }
 
 function rewriteTikTokUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !TIKTOK_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!TIKTOK_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
   const match = url.pathname.match(
     /^\/@([A-Za-z0-9._]{1,24})\/(video|photo)\/([0-9]{1,30})\/?$/,
@@ -377,21 +553,22 @@ function rewriteTikTokUrl(url: URL): string | null {
 }
 
 function rewriteRedditUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !REDDIT_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!REDDIT_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
-  const isPost = /^\/r\/[A-Za-z0-9_]{2,21}\/comments\/[A-Za-z0-9]+(?:\/[^/?#]+)?(?:\/[A-Za-z0-9]+)?\/?$/.test(url.pathname);
+  const isPost = /^\/(?:r|u|user)\/[A-Za-z0-9_-]{2,21}\/comments\/[A-Za-z0-9]+(?:\/[^/?#]+)?(?:\/[A-Za-z0-9]+)?\/?$/.test(url.pathname);
+  const isShortPost = /^\/comments\/[A-Za-z0-9]+\/?$/.test(url.pathname);
   const isShareLink = /^\/r\/[A-Za-z0-9_]{2,21}\/s\/[A-Za-z0-9]+\/?$/.test(url.pathname);
 
-  if (!isPost && !isShareLink) return null;
+  if (!isPost && !isShortPost && !isShareLink) return null;
 
   return `https://vxreddit.com${url.pathname}`;
 }
 
 function rewriteThreadsUrl(url: URL): string | null {
-  if (url.protocol !== "https:" || !THREADS_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
+  if (!THREADS_SOURCE_HOSTS.has(url.hostname.toLowerCase())) return null;
 
   const match = url.pathname.match(
-    /^\/@([A-Za-z0-9._]{1,30})\/post\/([A-Za-z0-9_-]+)\/?$/,
+    /^\/@([A-Za-z0-9._]{1,30})\/post\/([A-Za-z0-9_-]+)(?:\/media)?\/?$/,
   );
 
   if (!match) return null;
@@ -400,62 +577,52 @@ function rewriteThreadsUrl(url: URL): string | null {
   return `https://vxthreads.com/@${username}/post/${shortcode}`;
 }
 
-export function rewriteUrlForPlatform(input: string, platform: Platform,): string | null {
-  if (input !== input.trim()) return null;
+const REWRITERS: Record<Platform, (url: URL) => string | null> = {
+  x: rewriteXUrl,
+  instagram: rewriteInstagramUrl,
+  bluesky: rewriteBlueskyUrl,
+  tiktok: rewriteTikTokUrl,
+  twitch: rewriteTwitchUrl,
+  reddit: rewriteRedditUrl,
+  tumblr: rewriteTumblrUrl,
+  pixiv: rewritePixivUrl,
+  pinterest: rewritePinterestUrl,
+  youtube: rewriteYouTubeUrl,
+  bilibili: rewriteBilibiliUrl,
+  deviantart: rewriteDeviantArtUrl,
+  facebook: rewriteFacebookUrl,
+  threads: rewriteThreadsUrl,
+};
 
-  let url: URL;
+function parseCandidateUrl(input: string): URL | null {
+  if (typeof input !== "string") return null;
+
+  // Share buttons sometimes add a trailing newline or spaces; anything with
+  // inner whitespace is prose, not a lone link, and is left untouched.
+  const trimmed = input.trim();
+  if (!trimmed || trimmed.length > 2048 || /\s/.test(trimmed)) return null;
 
   try {
-    url = new URL(input);
+    const url = new URL(trimmed);
+    return url.protocol === "https:" ? url : null;
   } catch {
     return null;
-  }
-
-  switch (platform) {
-    case "x":
-      return rewriteXUrl(url);
-    case "instagram":
-      return rewriteInstagramUrl(url);
-    case "bluesky":
-      return rewriteBlueskyUrl(url);
-    case "tiktok":
-      return rewriteTikTokUrl(url);
-    case "twitch":
-      return rewriteTwitchUrl(url);
-    case "reddit":
-      return rewriteRedditUrl(url);
-    case "tumblr":
-      return rewriteTumblrUrl(url);
-    case "pixiv":
-      return rewritePixivUrl(url);
-    case "pinterest":
-      return rewritePinterestUrl(url);
-    case "youtube":
-      return rewriteYouTubeUrl(url);
-    case "bilibili":
-      return rewriteBilibiliUrl(url);
-    case "deviantart":
-      return rewriteDeviantArtUrl(url);
-    case "facebook":
-      return rewriteFacebookUrl(url);
-    case "threads":
-      return rewriteThreadsUrl(url);
   }
 }
 
-export function rewriteSupportedUrl(input: string): RewrittenLink | null {
-  let url: URL;
+export function rewriteUrlForPlatform(input: string, platform: Platform): string | null {
+  const url = parseCandidateUrl(input);
+  if (!url) return null;
+  return REWRITERS[platform](url);
+}
 
-  try {
-    url = new URL(input);
-  } catch {
-    return null;
-  }
+export function rewriteSupportedUrl(input: string): RewrittenLink | null {
+  const url = parseCandidateUrl(input);
+  if (!url) return null;
 
   const platform = platformForHostname(url.hostname);
-
   if (!platform) return null;
 
-  const fixedUrl = rewriteUrlForPlatform(input, platform);
+  const fixedUrl = REWRITERS[platform](url);
   return fixedUrl ? { fixedUrl, platform } : null;
 }

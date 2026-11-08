@@ -1,5 +1,13 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="128" height="128" rx="30" fill="#171412"/>
-  <path d="M43 94L33 104C24.1634 112.837 9.83656 112.837 1 104C-7.83656 95.1634 -7.83656 80.8366 1 72L21 52C29.8366 43.1634 44.1634 43.1634 53 52" transform="translate(18 -14)" stroke="#F8F6F1" stroke-width="12" stroke-linecap="round"/>
-  <path d="M75 36L85 26C93.8366 17.1634 108.163 17.1634 117 26C125.837 34.8366 125.837 49.1634 117 58L97 78C88.1634 86.8366 73.8366 86.8366 65 78" transform="translate(-7 8)" stroke="#F8F6F1" stroke-width="12" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Fx Everything: the original link (white) joined to the fixed one (blue). -->
+  <rect width="128" height="128" rx="28" fill="#141414"/>
+  <defs>
+    <clipPath id="weave"><rect x="48" y="64" width="32" height="28"/></clipPath>
+  </defs>
+  <g transform="rotate(-45 64 64)" fill="none" stroke-width="12">
+    <rect x="20" y="49" width="50" height="30" rx="15" stroke="#ffffff"/>
+    <rect x="58" y="49" width="50" height="30" rx="15" stroke="#5b93e6"/>
+    <!-- White passes over blue at the lower crossing, so the links interlock. -->
+    <rect x="20" y="49" width="50" height="30" rx="15" stroke="#ffffff" clip-path="url(#weave)"/>
+  </g>
 </svg>

@@ -1,0 +1,234 @@
+{
+  "extName": {
+    "message": "Fx Everything",
+    "description": "Extension name in Chrome and the Web Store"
+  },
+  "extShortName": {
+    "message": "Fx Everything",
+    "description": "Short extension name"
+  },
+  "extDescription": {
+    "message": "Copy links that show rich previews in Discord, Telegram and more, from 14 social platforms.",
+    "description": "Extension description"
+  },
+  "commandCopy": {
+    "message": "Copy the fixed link for the current post",
+    "description": "Keyboard shortcut description in chrome://extensions/shortcuts"
+  },
+  "menuCopyLink": {
+    "message": "Copy fixed link",
+    "description": "Right-click menu item on a post link"
+  },
+  "menuCopyPage": {
+    "message": "Copy fixed link to this post",
+    "description": "Right-click menu item on an open post"
+  },
+  "toastCopied": {
+    "message": "Fixed link copied",
+    "description": "On-page notice after copying"
+  },
+  "toastUndo": {
+    "message": "Undo",
+    "description": "Button that restores the original link"
+  },
+  "toastNotPost": {
+    "message": "This page isn't a single post",
+    "description": "Shortcut used on a feed or profile"
+  },
+  "toastNotPostDetail": {
+    "message": "Open the post, or right-click its link instead",
+    "description": "Hint under toastNotPost"
+  },
+  "toastNotSupportedLink": {
+    "message": "This link isn't a supported post",
+    "description": "Right-click on an unsupported link"
+  },
+  "toastCopyFailed": {
+    "message": "Couldn't copy the link",
+    "description": "Clipboard write failed"
+  },
+  "toastCopyFailedDetail": {
+    "message": "Click the page and try again",
+    "description": "Hint under toastCopyFailed"
+  },
+  "popupStatusOn": {
+    "message": "Fixing links",
+    "description": "Header status when enabled"
+  },
+  "popupStatusPaused": {
+    "message": "Paused",
+    "description": "Header status when disabled"
+  },
+  "popupPause": {
+    "message": "Pause automatic fixing",
+    "description": "Master switch label when on"
+  },
+  "popupResume": {
+    "message": "Resume automatic fixing",
+    "description": "Master switch label when off"
+  },
+  "popupThisTab": {
+    "message": "This tab",
+    "description": "Accessible name of the current-tab card"
+  },
+  "popupPostTitle": {
+    "message": "$1 post",
+    "description": "$1 is the platform name"
+  },
+  "popupFrom": {
+    "message": "From",
+    "description": "Original link label"
+  },
+  "popupTo": {
+    "message": "To",
+    "description": "Fixed link label"
+  },
+  "popupCopy": {
+    "message": "Copy fixed link",
+    "description": "Primary button"
+  },
+  "popupCopied": {
+    "message": "Copied",
+    "description": "Primary button after copying"
+  },
+  "popupCopyFailed": {
+    "message": "Couldn't copy, try again",
+    "description": "Primary button after a failure"
+  },
+  "popupPreview": {
+    "message": "Preview",
+    "description": "Opens the fixed link"
+  },
+  "popupNotPostTitle": {
+    "message": "$1, but not a single post",
+    "description": "$1 is the platform name"
+  },
+  "popupNotPostBody": {
+    "message": "Open a post to copy its fixed link here, or use $1's own Copy link button: it's fixed as it's copied.",
+    "description": "$1 is the platform name"
+  },
+  "popupNoPostTitle": {
+    "message": "This tab has no supported post",
+    "description": "Current tab is another site"
+  },
+  "popupNoPostBody": {
+    "message": "Right-click any post link and choose Copy fixed link, or use a site's own Copy link button.",
+    "description": "Hint for other sites"
+  },
+  "popupPlatforms": {
+    "message": "Platforms",
+    "description": "Section title"
+  },
+  "popupPlatformCount": {
+    "message": "$1 of $2 fixed automatically",
+    "description": "$1 enabled, $2 total"
+  },
+  "popupTurnAllOff": {
+    "message": "Turn all off",
+    "description": "Bulk action"
+  },
+  "popupTurnAllOn": {
+    "message": "Turn all on",
+    "description": "Bulk action"
+  },
+  "popupPlatformToggle": {
+    "message": "Fix $1 links automatically",
+    "description": "$1 is the platform name"
+  },
+  "popupPreferences": {
+    "message": "Preferences",
+    "description": "Accessible name of the preferences card"
+  },
+  "popupShortcut": {
+    "message": "Copy shortcut",
+    "description": "Shortcut row title"
+  },
+  "popupShortcutNotSet": {
+    "message": "Not set",
+    "description": "No shortcut assigned"
+  },
+  "popupShortcutChange": {
+    "message": "Change",
+    "description": "Opens chrome://extensions/shortcuts"
+  },
+  "popupShortcutSet": {
+    "message": "Set",
+    "description": "Opens chrome://extensions/shortcuts"
+  },
+  "popupConfirmation": {
+    "message": "Confirmation on the page",
+    "description": "Toast setting title"
+  },
+  "popupConfirmationDetail": {
+    "message": "A short notice with Undo after a link is fixed",
+    "description": "Toast setting description"
+  },
+  "popupConfirmationLabel": {
+    "message": "Show a confirmation after a link is fixed",
+    "description": "Toast switch label"
+  },
+  "popupVersion": {
+    "message": "Version $1",
+    "description": "$1 is the version number"
+  },
+  "popupReport": {
+    "message": "Report a broken link",
+    "description": "Footer link to GitHub issues"
+  },
+  "covers_x": {
+    "message": "Posts",
+    "description": "What gets fixed on X"
+  },
+  "covers_instagram": {
+    "message": "Posts & reels",
+    "description": "What gets fixed on Instagram"
+  },
+  "covers_bluesky": {
+    "message": "Posts",
+    "description": "What gets fixed on Bluesky"
+  },
+  "covers_tiktok": {
+    "message": "Videos & photos",
+    "description": "What gets fixed on TikTok"
+  },
+  "covers_reddit": {
+    "message": "Posts & share links",
+    "description": "What gets fixed on Reddit"
+  },
+  "covers_threads": {
+    "message": "Posts",
+    "description": "What gets fixed on Threads"
+  },
+  "covers_facebook": {
+    "message": "Posts & reels",
+    "description": "What gets fixed on Facebook"
+  },
+  "covers_pixiv": {
+    "message": "Artworks",
+    "description": "What gets fixed on Pixiv"
+  },
+  "covers_tumblr": {
+    "message": "Posts",
+    "description": "What gets fixed on Tumblr"
+  },
+  "covers_deviantart": {
+    "message": "Artworks",
+    "description": "What gets fixed on DeviantArt"
+  },
+  "covers_bilibili": {
+    "message": "Videos",
+    "description": "What gets fixed on Bilibili"
+  },
+  "covers_twitch": {
+    "message": "Clips",
+    "description": "What gets fixed on Twitch"
+  },
+  "covers_pinterest": {
+    "message": "Pins",
+    "description": "What gets fixed on Pinterest"
+  },
+  "covers_youtube": {
+    "message": "Community posts",
+    "description": "What gets fixed on YouTube"
+  }
+}

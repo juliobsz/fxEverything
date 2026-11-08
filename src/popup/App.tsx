@@ -1,236 +1,337 @@
 import { useEffect, useState } from "react";
-import { rewriteSupportedUrl } from "../shared/platforms";
+
+import { COPY_COMMAND } from "../shared/commands";
+import { t, type MessageKey } from "../shared/i18n";
+import {
+  PLATFORMS,
+  platformForHostname,
+  platformInfo,
+  rewriteSupportedUrl,
+  type Platform,
+  type PlatformInfo,
+  type RewrittenLink,
+} from "../shared/platforms";
 import {
   DEFAULT_SETTINGS,
   SETTINGS_KEYS,
+  settingKeyForPlatform,
   settingsFromStorage,
+  type SettingKey,
   type Settings,
 } from "../shared/settings";
+import { PLATFORM_ICON_PATHS } from "./platformIcons";
 import { Switch } from "./Switch";
 
-type CopyState = "idle" | "copying" | "copied" | "unsupported" | "failed";
+type CurrentPage =
+  | { kind: "loading" }
+  | { kind: "post"; link: RewrittenLink; sourceUrl: string }
+  | { kind: "platform"; platform: Platform }
+  | { kind: "other" };
 
-const COPY_LABELS: Record<CopyState, string> = {
-  idle: "Copy fixed link for this page",
-  copying: "Copying...",
-  copied: "Copied",
-  unsupported: "This page isn't a supported post",
-  failed: "Couldn't copy this link",
-};
+const ISSUES_URL = "https://github.com/juliobsz/fxeverything/issues";
 
-function booleanChange(change: chrome.storage.StorageChange | undefined, fallback: boolean,): boolean {
-  return typeof change?.newValue === "boolean" ? change.newValue : fallback;
-}
-
-export function App() {
+function useSettings() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [copyState, setCopyState] = useState<CopyState>('idle');
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    void chrome.storage.local
-      .get([...SETTINGS_KEYS])
-      .then((stored) => {
-        setSettings(settingsFromStorage(stored));
-      });
+    void chrome.storage.local.get([...SETTINGS_KEYS]).then((stored) => {
+      setSettings(settingsFromStorage(stored));
+      setLoaded(true);
+    }, () => setLoaded(true));
 
-    const handleStorageChange = (
+    const onChanged = (
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName !== "local") return;
-
-      setSettings((current) => ({
-        autoFixBilibili: booleanChange(
-          changes.autoFixBilibili,
-          current.autoFixBilibili,
-        ),
-        autoFixDeviantArt: booleanChange(
-          changes.autoFixDeviantArt,
-          current.autoFixDeviantArt,
-        ),
-        autoFixFacebook: booleanChange(
-          changes.autoFixFacebook,
-          current.autoFixFacebook,
-        ),
-        autoFixBluesky: booleanChange(
-          changes.autoFixBluesky,
-          current.autoFixBluesky,
-        ),
-        autoFixInstagram: booleanChange(
-          changes.autoFixInstagram,
-          current.autoFixInstagram,
-        ),
-        autoFixPixiv: booleanChange(
-          changes.autoFixPixiv,
-          current.autoFixPixiv,
-        ),
-        autoFixPinterest: booleanChange(
-          changes.autoFixPinterest,
-          current.autoFixPinterest,
-        ),
-        autoFixReddit: booleanChange(
-          changes.autoFixReddit,
-          current.autoFixReddit,
-        ),
-        autoFixThreads: booleanChange(
-          changes.autoFixThreads,
-          current.autoFixThreads,
-        ),
-        autoFixTikTok: booleanChange(
-          changes.autoFixTikTok,
-          current.autoFixTikTok,
-        ),
-        autoFixTwitch: booleanChange(
-          changes.autoFixTwitch,
-          current.autoFixTwitch,
-        ),
-        autoFixTumblr: booleanChange(
-          changes.autoFixTumblr,
-          current.autoFixTumblr,
-        ),
-        autoFixYouTube: booleanChange(
-          changes.autoFixYouTube,
-          current.autoFixYouTube,
-        ),
-        autoFixX: booleanChange(changes.autoFixX, current.autoFixX),
-      }));
+      setSettings((current) => {
+        const next = { ...current };
+        for (const key of SETTINGS_KEYS) {
+          const value = changes[key]?.newValue;
+          if (typeof value === "boolean") next[key] = value;
+        }
+        return next;
+      });
     };
 
-    chrome.storage.onChanged.addListener(handleStorageChange);
-    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+    chrome.storage.onChanged.addListener(onChanged);
+    return () => chrome.storage.onChanged.removeListener(onChanged);
   }, []);
 
-  const updateSetting = <Key extends keyof Settings>(
-    key: Key,
-    value: Settings[Key],
-  ) => {
-    setSettings((current) => ({ ...current, [key]: value }));
-    void chrome.storage.local.set({ [key]: value });
+  const update = (patch: Partial<Settings>) => {
+    setSettings((current) => ({ ...current, ...patch }));
+    void chrome.storage.local.set(patch);
   };
 
-  const copyCurrentPage = async () => {
-    setCopyState("copying");
+  return [settings, update, loaded] as const;
+}
 
-    try {
-      const [activeTab] = await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-      });
-      const rewritten = activeTab?.url
-        ? rewriteSupportedUrl(activeTab.url)
-        : null;
+function useCurrentPage(): CurrentPage {
+  const [page, setPage] = useState<CurrentPage>({ kind: "loading" });
 
-      if (!rewritten) {
-        setCopyState("unsupported");
-        return;
+  useEffect(() => {
+    void chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+      const url = tab?.url ?? "";
+      const link = rewriteSupportedUrl(url);
+      if (link) return setPage({ kind: "post", link, sourceUrl: url });
+
+      let platform: Platform | null = null;
+      try {
+        platform = platformForHostname(new URL(url).hostname);
+      } catch {
+        platform = null;
       }
+      setPage(platform ? { kind: "platform", platform } : { kind: "other" });
+    }).catch(() => setPage({ kind: "other" }));
+  }, []);
 
-      await navigator.clipboard.writeText(rewritten.fixedUrl);
-      setCopyState("copied");
+  return page;
+}
+
+function useShortcut(): string | null | undefined {
+  const [shortcut, setShortcut] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    void chrome.commands?.getAll?.().then((commands) => {
+      const command = commands.find((item) => item.name === COPY_COMMAND);
+      setShortcut(command?.shortcut || null);
+    }).catch(() => setShortcut(null));
+  }, []);
+
+  return shortcut;
+}
+
+export function App() {
+  const [settings, updateSettings, loaded] = useSettings();
+  const page = useCurrentPage();
+  const shortcut = useShortcut();
+
+  // Avoid flashing defaults before stored settings arrive (a few ms).
+  if (!loaded) return <main className="h-[520px] w-[400px] bg-ground" />;
+
+  const enabledCount = PLATFORMS.filter(
+    (platform) => settings[settingKeyForPlatform(platform.id)],
+  ).length;
+  const allOn = enabledCount === PLATFORMS.length;
+
+  const setAllPlatforms = (value: boolean) => {
+    updateSettings(Object.fromEntries(
+      PLATFORMS.map((platform) => [settingKeyForPlatform(platform.id), value]),
+    ) as Partial<Record<SettingKey, boolean>>);
+  };
+
+  return (
+    <main className="w-[400px] bg-ground p-4 text-ink">
+      <header className="flex h-9 items-center gap-2 px-1">
+        <img alt="" className="size-5 rounded" src="/icons/icon-32.png" />
+        <h1 className="text-[14px] font-medium">Fx Everything</h1>
+        <span className="ml-auto text-[12px] text-muted">
+          {settings.enabled ? t("popupStatusOn") : t("popupStatusPaused")}
+        </span>
+        <Switch
+          checked={settings.enabled}
+          label={settings.enabled ? t("popupPause") : t("popupResume")}
+          onChange={(enabled) => updateSettings({ enabled })}
+        />
+      </header>
+
+      <div className="mt-2 space-y-3">
+        <ThisTab page={page} />
+
+        <section aria-labelledby="platforms-title">
+          <div className="flex h-8 items-center gap-2 px-1">
+            <h2 className="shrink-0 text-[14px] font-medium" id="platforms-title">{t("popupPlatforms")}</h2>
+            <span className="num min-w-0 truncate text-[12px] text-muted">{t("popupPlatformCount", enabledCount, PLATFORMS.length)}</span>
+            <button
+              className="ml-auto shrink-0 cursor-pointer whitespace-nowrap rounded-md px-1.5 py-0.5 text-[12px] font-medium text-ink hover:bg-raised focus-visible:outline-2 focus-visible:outline-ink"
+              onClick={() => setAllPlatforms(!allOn)}
+              type="button"
+            >
+              {allOn ? t("popupTurnAllOff") : t("popupTurnAllOn")}
+            </button>
+          </div>
+          <ul
+            className={`grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface transition-opacity ${
+              settings.enabled ? "" : "opacity-60"
+            }`}
+          >
+            {PLATFORMS.map((platform, index) => {
+              const key = settingKeyForPlatform(platform.id);
+              return (
+                <li
+                  className={`${index % 2 === 0 ? "border-r border-rule" : ""} ${index >= 2 ? "border-t border-rule" : ""}`}
+                  key={platform.id}
+                >
+                  <PlatformRow
+                    checked={settings[key]}
+                    onChange={(value) => updateSettings({ [key]: value })}
+                    platform={platform}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <section aria-label={t("popupPreferences")} className="divide-y divide-rule rounded-lg border border-border bg-surface">
+          <div className="flex h-11 items-center gap-2 px-3">
+            <span className="flex-1 text-[14px]">{t("popupShortcut")}</span>
+            {shortcut ? (
+              <kbd className="num rounded bg-raised px-1.5 py-0.5 font-sans text-[12px] text-ink">
+                {shortcut.replaceAll("+", " + ")}
+              </kbd>
+            ) : shortcut === null ? (
+              <span className="text-[12px] text-muted">{t("popupShortcutNotSet")}</span>
+            ) : null}
+            <button
+              className="cursor-pointer rounded-md px-1.5 py-0.5 text-[12px] font-medium hover:bg-raised focus-visible:outline-2 focus-visible:outline-ink"
+              onClick={() => void chrome.tabs.create({ url: "chrome://extensions/shortcuts" })}
+              type="button"
+            >
+              {shortcut ? t("popupShortcutChange") : t("popupShortcutSet")}
+            </button>
+          </div>
+          <div className="flex items-center gap-3 px-3 py-2.5">
+            <span className="flex-1">
+              <span className="block text-[14px]">{t("popupConfirmation")}</span>
+              <span className="block text-[12px] leading-4 text-muted">{t("popupConfirmationDetail")}</span>
+            </span>
+            <Switch
+              checked={settings.showToast}
+              label={t("popupConfirmationLabel")}
+              onChange={(showToast) => updateSettings({ showToast })}
+            />
+          </div>
+        </section>
+      </div>
+
+      <footer className="mt-2 flex h-7 items-center justify-between px-1 text-[12px] text-muted">
+        <span className="num">{t("popupVersion", chrome.runtime.getManifest?.().version ?? "")}</span>
+        <a className="rounded hover:text-ink hover:underline focus-visible:outline-2 focus-visible:outline-ink" href={ISSUES_URL} rel="noopener noreferrer" target="_blank">
+          {t("popupReport")}
+        </a>
+      </footer>
+    </main>
+  );
+}
+
+function ThisTab({ page }: { page: CurrentPage }) {
+  const [copied, setCopied] = useState<"idle" | "copied" | "failed">("idle");
+
+  useEffect(() => {
+    if (copied === "idle") return;
+    const timer = setTimeout(() => setCopied("idle"), 1600);
+    return () => clearTimeout(timer);
+  }, [copied]);
+
+  if (page.kind === "loading") {
+    return <div aria-hidden className="h-[124px] rounded-lg border border-border bg-surface" />;
+  }
+
+  if (page.kind !== "post") {
+    const info = page.kind === "platform" ? platformInfo(page.platform) : null;
+    return (
+      <section aria-label={t("popupThisTab")} className="rounded-lg border border-border bg-surface px-3 py-3">
+        <div className="flex items-center gap-2">
+          {info && <PlatformIcon className="size-4" platform={info.id} />}
+          <p className="text-[13px] font-medium">
+            {info ? t("popupNotPostTitle", info.name) : t("popupNoPostTitle")}
+          </p>
+        </div>
+        <p className="mt-1 text-[13px] leading-5 text-muted">
+          {info
+            ? t("popupNotPostBody", info.name)
+            : t("popupNoPostBody")}
+        </p>
+      </section>
+    );
+  }
+
+  const { fixedUrl, platform } = page.link;
+  const info = platformInfo(platform);
+  const fixed = new URL(fixedUrl);
+  const fixedRest = fixedUrl.slice(`https://${fixed.host}`.length);
+  const source = page.sourceUrl.replace(/^https:\/\/(www\.)?/, "");
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(fixedUrl);
+      setCopied("copied");
     } catch {
-      setCopyState("failed");
+      setCopied("failed");
     }
   };
 
   return (
-    <main className="max-h-150 w-88 overflow-y-auto bg-light p-4 text-stone-950 dark:bg-[#0A0A10] dark:text-stone-50">
-      <header className="flex items-center justify-between gap-3 border-b border-stone-200 pb-4 dark:border-stone-800">
-        <h1 className="text-xl font-semibold tracking-[-0.02em]">
-          FxEverything
-        </h1>
-        <a aria-label="Open FxEverything issues" className="cursor-pointer text-stone-950 dark:text-white" href="https://github.com/juliobsz/fxeverything/issues" target="_blank" rel="noopener noreferrer">
-          <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="30" height="30" viewBox="0 0 30 30">
-            <path fill="currentColor" d="M15,3C8.373,3,3,8.373,3,15c0,5.623,3.872,10.328,9.092,11.63C12.036,26.468,12,26.28,12,26.047v-2.051 c-0.487,0-1.303,0-1.508,0c-0.821,0-1.551-0.353-1.905-1.009c-0.393-0.729-0.461-1.844-1.435-2.526 c-0.289-0.227-0.069-0.486,0.264-0.451c0.615,0.174,1.125,0.596,1.605,1.222c0.478,0.627,0.703,0.769,1.596,0.769 c0.433,0,1.081-0.025,1.691-0.121c0.328-0.833,0.895-1.6,1.588-1.962c-3.996-0.411-5.903-2.399-5.903-5.098 c0-1.162,0.495-2.286,1.336-3.233C9.053,10.647,8.706,8.73,9.435,8c1.798,0,2.885,1.166,3.146,1.481C13.477,9.174,14.461,9,15.495,9 c1.036,0,2.024,0.174,2.922,0.483C18.675,9.17,19.763,8,21.565,8c0.732,0.731,0.381,2.656,0.102,3.594 c0.836,0.945,1.328,2.066,1.328,3.226c0,2.697-1.904,4.684-5.894,5.097C18.199,20.49,19,22.1,19,23.313v2.734 c0,0.104-0.023,0.179-0.035,0.268C23.641,24.676,27,20.236,27,15C27,8.373,21.627,3,15,3z"></path>
-          </svg>
+    <section aria-label={t("popupThisTab")} className="rounded-lg border border-border bg-surface p-3">
+      <div className="flex items-center gap-2">
+        <PlatformIcon className="size-4" platform={platform} />
+        <p className="text-[14px] font-medium">{t("popupPostTitle", info.name)}</p>
+      </div>
+
+      <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[13px] leading-5">
+        <dt className="text-muted">{t("popupFrom")}</dt>
+        <dd className="truncate text-muted" title={page.sourceUrl}>{source}</dd>
+        <dt className="text-muted">{t("popupTo")}</dt>
+        <dd className="truncate" title={fixedUrl}>
+          <span className="font-medium text-hue">{fixed.host}</span>
+          <span>{fixedRest}</span>
+        </dd>
+      </dl>
+
+      <div className="mt-3 flex gap-2">
+        <button
+          className="h-8 flex-1 cursor-pointer rounded-md bg-primary px-3 text-[13px] font-medium text-on-primary transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink active:opacity-75"
+          onClick={() => void copy()}
+          type="button"
+        >
+          {copied === "copied" ? t("popupCopied") : copied === "failed" ? t("popupCopyFailed") : t("popupCopy")}
+        </button>
+        <a
+          className="flex h-8 items-center rounded-md bg-secondary px-3 text-[13px] font-medium hover:bg-secondary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          href={fixedUrl}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          {t("popupPreview")}
         </a>
-      </header>
+      </div>
+    </section>
+  );
+}
 
-      <section
-        aria-label="Automatic link fixing"
-        className="divide-y divide-stone-200 dark:divide-stone-800"
-      >
-        <Switch
-          checked={settings.autoFixX}
-          label="Fix X links automatically"
-          onChange={(checked) => updateSetting("autoFixX", checked)}
-        />
-        <Switch
-          checked={settings.autoFixInstagram}
-          label="Fix Instagram links automatically"
-          onChange={(checked) =>
-            updateSetting("autoFixInstagram", checked)
-          }
-        />
-        <Switch
-          checked={settings.autoFixPixiv}
-          label="Fix Pixiv links automatically"
-          onChange={(checked) => updateSetting("autoFixPixiv", checked)}
-        />
-        <Switch
-          checked={settings.autoFixPinterest}
-          label="Fix Pinterest links automatically"
-          onChange={(checked) => updateSetting("autoFixPinterest", checked)}
-        />
-        <Switch
-          checked={settings.autoFixBilibili}
-          label="Fix Bilibili links automatically"
-          onChange={(checked) => updateSetting("autoFixBilibili", checked)}
-        />
-        <Switch
-          checked={settings.autoFixDeviantArt}
-          label="Fix DeviantArt links automatically"
-          onChange={(checked) => updateSetting("autoFixDeviantArt", checked)}
-        />
-        <Switch
-          checked={settings.autoFixFacebook}
-          label="Fix Facebook links automatically"
-          onChange={(checked) => updateSetting("autoFixFacebook", checked)}
-        />
-        <Switch
-          checked={settings.autoFixBluesky}
-          label="Fix Bluesky links automatically"
-          onChange={(checked) => updateSetting("autoFixBluesky", checked)}
-        />
-        <Switch
-          checked={settings.autoFixTikTok}
-          label="Fix TikTok links automatically"
-          onChange={(checked) => updateSetting("autoFixTikTok", checked)}
-        />
-        <Switch
-          checked={settings.autoFixTwitch}
-          label="Fix Twitch links automatically"
-          onChange={(checked) => updateSetting("autoFixTwitch", checked)}
-        />
-        <Switch
-          checked={settings.autoFixTumblr}
-          label="Fix Tumblr links automatically"
-          onChange={(checked) => updateSetting("autoFixTumblr", checked)}
-        />
-        <Switch
-          checked={settings.autoFixYouTube}
-          label="Fix YouTube Community links automatically"
-          onChange={(checked) => updateSetting("autoFixYouTube", checked)}
-        />
-        <Switch
-          checked={settings.autoFixReddit}
-          label="Fix Reddit links automatically"
-          onChange={(checked) => updateSetting("autoFixReddit", checked)}
-        />
-        <Switch
-          checked={settings.autoFixThreads}
-          label="Fix Threads links automatically"
-          onChange={(checked) => updateSetting("autoFixThreads", checked)}
-        />
-      </section>
+function PlatformRow({
+  checked,
+  onChange,
+  platform,
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  platform: PlatformInfo;
+}) {
+  return (
+    <div
+      className="flex h-9 items-center gap-2 px-3"
+      title={`${t(`covers_${platform.id}` as MessageKey)} → ${platform.service}`}
+    >
+      <PlatformIcon className={`size-4 transition-colors ${checked ? "text-ink" : "text-muted"}`} platform={platform.id} />
+      <span className={`min-w-0 flex-1 truncate text-[14px] ${checked ? "" : "text-muted"}`}>
+        {platform.name.replace(" / Twitter", "")}
+      </span>
+      <Switch
+        checked={checked}
+        label={t("popupPlatformToggle", platform.name)}
+        onChange={onChange}
+      />
+    </div>
+  );
+}
 
-      <button
-        className="cursor-pointer disabled:cursor-wait mt-3 min-h-11 w-full rounded-xl bg-stone-950 px-4 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-500 disabled:opacity-70 dark:bg-orange-500 dark:text-stone-950 dark:hover:bg-orange-400"
-        disabled={copyState === "copying"}
-        onClick={() => void copyCurrentPage()}
-        type="button"
-      >
-        {COPY_LABELS[copyState]}
-      </button>
-    </main>
+function PlatformIcon({ platform, className = "" }: { platform: Platform; className?: string }) {
+  return (
+    <svg aria-hidden className={`shrink-0 ${className}`} fill="currentColor" viewBox="0 0 24 24">
+      <path d={PLATFORM_ICON_PATHS[platform]} />
+    </svg>
   );
 }

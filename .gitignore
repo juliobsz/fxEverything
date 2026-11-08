@@ -5,3 +5,4 @@ release/
 scripts/
 *.zip
 *.log
+.taste-skill/

@@ -3,36 +3,52 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FxEverything Popup Preview</title>
+    <title>Fx Everything Popup Preview</title>
   </head>
   <body>
     <div id="root"></div>
     <script>
+      // Minimal chrome.* mock so the popup can be developed in a normal tab.
+      // ?url=<tab url> changes the simulated current tab.
+      const params = new URLSearchParams(location.search);
+      const store = { autoFixPinterest: false, autoFixYouTube: false };
+      const listeners = new Set();
+      // ?lang=pt_BR previews another locale from public/_locales.
+      const lang = params.get("lang") ?? "en";
+      const request = new XMLHttpRequest();
+      request.open("GET", `/_locales/${lang}/messages.json`, false);
+      request.send();
+      const catalog = JSON.parse(request.responseText);
       globalThis.chrome = {
-        runtime: {
-          getManifest: () => ({}),
+        i18n: {
+          getUILanguage: () => lang.replace("_", "-"),
+          getMessage: (key, subs = []) =>
+            catalog[key]?.message.replace(/\$([1-9])/g, (_, n) => subs[n - 1] ?? "") ?? "",
+        },
+        runtime: { getManifest: () => ({ version: "2.0.0" }) },
+        commands: {
+          getAll: async () => [{ name: "copy-fixed-link", shortcut: "Alt+Shift+C" }],
         },
         storage: {
           local: {
-            get: async () => ({
-              autoFixInstagram: true,
-              autoFixReddit: true,
-              autoFixThreads: true,
-              autoFixTikTok: true,
-              autoFixX: true,
-            }),
-            set: async () => undefined,
+            get: async () => ({ ...store }),
+            set: async (patch) => {
+              Object.assign(store, patch);
+              const changes = Object.fromEntries(
+                Object.entries(patch).map(([key, newValue]) => [key, { newValue }]),
+              );
+              listeners.forEach((listener) => listener(changes, "local"));
+            },
           },
           onChanged: {
-            addListener: () => undefined,
-            removeListener: () => undefined,
+            addListener: (listener) => listeners.add(listener),
+            removeListener: (listener) => listeners.delete(listener),
           },
         },
         tabs: {
+          create: async ({ url }) => console.log("open", url),
           query: async () => [
-            {
-              url: "https://x.com/example/status/123456789",
-            },
+            { url: params.get("url") ?? "https://x.com/example/status/1234567890123456789?s=20" },
           ],
         },
       };

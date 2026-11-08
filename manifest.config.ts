@@ -1,77 +1,46 @@
 import { defineManifest } from "@crxjs/vite-plugin";
 
 import packageJson from "./package.json";
+import { COPY_COMMAND, DEFAULT_COPY_SHORTCUT } from "./src/shared/commands";
+import { SUPPORTED_PAGE_MATCHES } from "./src/shared/platforms";
 
-const supportedPages = [
-  "https://bsky.app/*",
-  "https://bilibili.com/*",
-  "https://www.bilibili.com/*",
-  "https://m.bilibili.com/*",
-  "https://b23.tv/*",
-  "https://deviantart.com/*",
-  "https://www.deviantart.com/*",
-  "https://*.deviantart.com/*",
-  "https://sta.sh/*",
-  "https://facebook.com/*",
-  "https://www.facebook.com/*",
-  "https://m.facebook.com/*",
-  "https://mbasic.facebook.com/*",
-  "https://x.com/*",
-  "https://www.x.com/*",
-  "https://mobile.x.com/*",
-  "https://twitter.com/*",
-  "https://www.twitter.com/*",
-  "https://mobile.twitter.com/*",
-  "https://instagram.com/*",
-  "https://www.instagram.com/*",
-  "https://pixiv.net/*",
-  "https://www.pixiv.net/*",
-  "https://pinterest.com/*",
-  "https://www.pinterest.com/*",
-  "https://*.pinterest.com/*",
-  "https://pin.it/*",
-  "https://youtube.com/*",
-  "https://www.youtube.com/*",
-  "https://m.youtube.com/*",
-  "https://tiktok.com/*",
-  "https://www.tiktok.com/*",
-  "https://m.tiktok.com/*",
-  "https://twitch.tv/*",
-  "https://www.twitch.tv/*",
-  "https://m.twitch.tv/*",
-  "https://clips.twitch.tv/*",
-  "https://tumblr.com/*",
-  "https://www.tumblr.com/*",
-  "https://*.tumblr.com/*",
-  "https://reddit.com/*",
-  "https://www.reddit.com/*",
-  "https://threads.com/*",
-  "https://www.threads.com/*",
-  "https://threads.net/*",
-  "https://www.threads.net/*",
-];
+const supportedPages = [...SUPPORTED_PAGE_MATCHES];
 
 export default defineManifest({
   manifest_version: 3,
-  name: "FxEverything - Better Social Embeds",
-  short_name: "FxEverything",
-  description:
-    "Silently copy richer embed links from social media share actions.",
+  // Texts come from public/_locales/<locale>/messages.json (en, pt_BR).
+  default_locale: "en",
+  name: "__MSG_extName__",
+  short_name: "__MSG_extShortName__",
+  description: "__MSG_extDescription__",
   version: packageJson.version,
   minimum_chrome_version: "111",
-  permissions: ["storage", "activeTab"],
+  permissions: ["storage", "activeTab", "scripting", "contextMenus"],
+  // Same sites the content scripts already run on; needed to inject into tabs
+  // that were open before install/update so nothing requires a refresh.
+  host_permissions: supportedPages,
   icons: {
     16: "icons/icon-16.png",
     32: "icons/icon-32.png",
     48: "icons/icon-48.png",
     128: "icons/icon-128.png",
   },
+  background: {
+    service_worker: "src/background.ts",
+    type: "module",
+  },
   action: {
-    default_title: "FxEverything",
+    default_title: "__MSG_extShortName__",
     default_popup: "popup.html",
     default_icon: {
       16: "icons/icon-16.png",
       32: "icons/icon-32.png",
+    },
+  },
+  commands: {
+    [COPY_COMMAND]: {
+      suggested_key: { default: DEFAULT_COPY_SHORTCUT },
+      description: "__MSG_commandCopy__",
     },
   },
   content_scripts: [
@@ -83,7 +52,7 @@ export default defineManifest({
     },
     {
       matches: supportedPages,
-      js: ["src/content/settings-bridge.ts"],
+      js: ["src/content/settings-bridge.iife.ts"],
       run_at: "document_start",
       world: "ISOLATED",
     },

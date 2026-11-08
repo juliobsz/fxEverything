@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Fx Everything: the original link (white) joined to the fixed one (blue). -->
+  <rect width="128" height="128" rx="28" fill="#141414"/>
+  <defs>
+    <clipPath id="weave"><rect x="48" y="64" width="32" height="28"/></clipPath>
+  </defs>
+  <g transform="rotate(-45 64 64)" fill="none" stroke-width="12">
+    <rect x="20" y="49" width="50" height="30" rx="15" stroke="#ffffff"/>
+    <rect x="58" y="49" width="50" height="30" rx="15" stroke="#5b93e6"/>
+    <!-- White passes over blue at the lower crossing, so the links interlock. -->
+    <rect x="20" y="49" width="50" height="30" rx="15" stroke="#ffffff" clip-path="url(#weave)"/>
+  </g>
+</svg>

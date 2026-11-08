@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 
 import {
+  PLATFORMS,
   platformForHostname,
   rewriteSupportedUrl,
 } from "../src/shared/platforms.ts";
@@ -107,11 +108,11 @@ test("Twitch clip links become tracking-free FixEmbed links", () => {
   });
 });
 
-test("Tumblr post permalinks become canonical tracking-free FixEmbed links", () => {
+test("Tumblr post permalinks become canonical tracking-free links", () => {
   expect(platformForHostname("example-blog.tumblr.com")).toBe("tumblr");
   const expected = {
     fixedUrl:
-      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.tumblr.com%2Fexample-blog%2F123456789012345678",
+      "https://www.tpmblr.com/example-blog/123456789012345678",
     platform: "tumblr",
   };
 
@@ -127,11 +128,11 @@ test("Tumblr post permalinks become canonical tracking-free FixEmbed links", () 
   ).toEqual(expected);
 });
 
-test("Pixiv artwork links become canonical tracking-free FixEmbed links", () => {
+test("Pixiv artwork links become canonical tracking-free links", () => {
   expect(platformForHostname("www.pixiv.net")).toBe("pixiv");
   const expected = {
     fixedUrl:
-      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.pixiv.net%2Fartworks%2F123456789",
+      "https://phixiv.net/artworks/123456789",
     platform: "pixiv",
   };
 
@@ -177,7 +178,7 @@ test("YouTube Community post links become tracking-free FixEmbed links", () => {
   });
 });
 
-test("Bilibili video links become tracking-free FixEmbed links", () => {
+test("Bilibili video links become tracking-free vxBilibili links", () => {
   expect(platformForHostname("m.bilibili.com")).toBe("bilibili");
   expect(
     rewriteSupportedUrl(
@@ -185,7 +186,7 @@ test("Bilibili video links become tracking-free FixEmbed links", () => {
     ),
   ).toEqual({
     fixedUrl:
-      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.bilibili.com%2Fvideo%2FBV1xx411c7mD",
+      "https://vxbilibili.com/video/BV1xx411c7mD",
     platform: "bilibili",
   });
   expect(rewriteSupportedUrl("https://b23.tv/AbC123x?share_source=copy_web")).toEqual({
@@ -194,11 +195,11 @@ test("Bilibili video links become tracking-free FixEmbed links", () => {
   });
 });
 
-test("DeviantArt artwork links become tracking-free FixEmbed links", () => {
+test("DeviantArt artwork links become tracking-free fixDeviantArt links", () => {
   expect(platformForHostname("artist.deviantart.com")).toBe("deviantart");
   const expectedArtwork = {
     fixedUrl:
-      "https://fixembed.app/embed?url=https%3A%2F%2Fwww.deviantart.com%2Fartist%2Fart%2Fexample-artwork-123456789",
+      "https://fixdeviantart.com/artist/art/example-artwork-123456789",
     platform: "deviantart",
   };
 
@@ -259,7 +260,7 @@ test("unsupported and malformed new-platform URLs fail open", () => {
     "https://www.facebook.com/share/r/AbCdEf123",
     "https://www.facebook.com/groups/example.group/permalink/123456789",
     "http://clips.twitch.tv/DistinctiveClipSlug",
-    " https://clips.twitch.tv/DistinctiveClipSlug",
+    "https://clips.twitch.tv/DistinctiveClipSlug and some prose",
   ];
 
   for (const url of unsupportedUrls) {
@@ -315,7 +316,9 @@ test("every platform maps to an independent persisted setting", () => {
     ["threads", "autoFixThreads"],
   ] as const;
 
-  expect(SETTINGS_KEYS).toHaveLength(mappings.length);
+  expect(SETTINGS_KEYS).toHaveLength(mappings.length + 2);
+  expect(DEFAULT_SETTINGS.enabled).toBe(true);
+  expect(DEFAULT_SETTINGS.showToast).toBe(true);
   for (const [platform, settingKey] of mappings) {
     expect(settingKeyForPlatform(platform)).toBe(settingKey);
     expect(DEFAULT_SETTINGS[settingKey]).toBe(true);
@@ -327,4 +330,52 @@ test("every platform maps to an independent persisted setting", () => {
   });
   expect(hydrated.autoFixFacebook).toBe(false);
   expect(hydrated.autoFixTwitch).toBe(true);
+});
+
+test("copied links with surrounding whitespace are still fixed", () => {
+  expect(rewriteSupportedUrl("  https://x.com/example/status/123456789\n")).toEqual({
+    fixedUrl: "https://fixupx.com/example/status/123456789",
+    platform: "x",
+  });
+});
+
+test("newer URL shapes are recognized", () => {
+  const cases = [
+    ["https://www.instagram.com/someone/p/ABC_123/", "https://oginstagram.com/p/ABC_123/"],
+    ["https://www.instagram.com/someone/reel/ABC_123/?igsh=x", "https://oginstagram.com/reel/ABC_123/"],
+    ["https://www.reddit.com/user/someone/comments/abc123/title/", "https://vxreddit.com/user/someone/comments/abc123/title/"],
+    ["https://www.reddit.com/comments/abc123", "https://vxreddit.com/comments/abc123"],
+    ["https://www.tumblr.com/blog/view/example-blog/123456789012345678", "https://www.tpmblr.com/example-blog/123456789012345678"],
+    ["https://www.bilibili.com/video/BV1xx411c7mD/?p=3&spm_id_from=x", "https://vxbilibili.com/video/BV1xx411c7mD?p=3"],
+    ["https://www.pinterest.com/pin/some-title--123456789012345678/", "https://fixembed.app/embed?url=https%3A%2F%2Fwww.pinterest.com%2Fpin%2F123456789012345678"],
+    ["https://www.youtube.com/@channel/community?lb=UgkxiCSRfD6g7SPlWGPDa3vbP7aIsytXRkvy", "https://fixembed.app/embed?url=https%3A%2F%2Fwww.youtube.com%2Fpost%2FUgkxiCSRfD6g7SPlWGPDa3vbP7aIsytXRkvy"],
+    ["https://www.threads.com/@creator/post/ABC_123/media", "https://vxthreads.com/@creator/post/ABC_123"],
+  ] as const;
+
+  for (const [sourceUrl, fixedUrl] of cases) {
+    expect(rewriteSupportedUrl(sourceUrl)?.fixedUrl, sourceUrl).toBe(fixedUrl);
+  }
+});
+
+test("already-fixed links are never rewritten again", () => {
+  for (const url of [
+    "https://fixupx.com/example/status/123456789",
+    "https://oginstagram.com/p/ABC_123/",
+    "https://phixiv.net/artworks/123456789",
+  ]) {
+    expect(rewriteSupportedUrl(url)).toBeNull();
+  }
+});
+
+test("platform metadata covers every platform exactly once", () => {
+  const ids = PLATFORMS.map((platform) => platform.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  expect(ids).toHaveLength(14);
+  for (const platform of PLATFORMS) {
+    expect(platform.matches.length).toBeGreaterThan(0);
+    for (const match of platform.matches) {
+      const host = match.replace("https://", "").replace("/*", "").replace("*.", "sub.");
+      expect(platformForHostname(host), match).toBe(platform.id);
+    }
+  }
 });
