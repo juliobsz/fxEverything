@@ -8,7 +8,7 @@
     "description": "Short extension name"
   },
   "extDescription": {
-    "message": "Copy links that show rich previews in Discord, Telegram and more, from 14 social platforms.",
+    "message": "Copy a post link from X, Instagram, TikTok and 11 more, and paste one that shows the image, video and text in Discord and Telegram.",
     "description": "Extension description"
   },
   "commandCopy": {
